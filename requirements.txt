@@ -1,0 +1,4 @@
+flask==2.3.3
+pymysql==1.1.0          # 连接MySQL的驱动
+sqlalchemy==2.0.23      # ORM工具（简化数据库操作）
+python-dotenv==1.0.0    # 可选：管理环境变量（非必需）
