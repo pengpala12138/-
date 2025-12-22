@@ -5,7 +5,7 @@ import random
 import time
 import os
 
-# 数据库配置（保持原配置不变）
+# 数据库配置
 DB_CONFIG = {
     "host": "10.152.230.97",
     "user": "zyj",

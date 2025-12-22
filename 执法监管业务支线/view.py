@@ -11,7 +11,7 @@ import pandas as pd
 import time
 from typing import Optional
 
-# 数据库连接配置（与 Flask 接口保持一致）
+# 数据库连接配置
 DB_CONFIG = {
     "host": "10.152.230.97",
     "port": 3306,

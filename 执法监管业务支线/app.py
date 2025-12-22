@@ -153,7 +153,7 @@ def get_illegal_records():
     try:
         conn = get_db_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            # 统计总数
+            # 统计总
             if status and behavior_type:
                 total_sql = "SELECT COUNT(*) AS total FROM illegal_record WHERE status = %s AND behavior_type = %s"
                 cursor.execute(total_sql, (status, behavior_type))

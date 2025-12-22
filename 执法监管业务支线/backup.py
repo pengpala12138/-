@@ -9,7 +9,7 @@ import time
 import shutil
 from datetime import datetime, timedelta
 
-# 数据库配置（与数据库设计文档、app.py一致）
+# 数据库配置
 DB_CONFIG = {
     "host": "10.152.230.97",
     "user": "zyj",
