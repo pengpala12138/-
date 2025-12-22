@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+        name="description"
+        content="游客智能管理系统 - 基于React和Flask的智能旅游管理平台"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Ant Design 样式（可选，如果要在index.html中引入） -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/5.8.0/reset.min.css" /> -->
+
+    <title>游客智能管理系统 v2.1.3</title>
+
+    <!-- 预加载API连接 -->
+    <link rel="preconnect" href="http://172.20.10.7:5000" />
+
+    <style>
+        /* 全局基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #f5f5f5;
+            overflow-x: hidden;
+        }
+
+        code {
+            font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+                monospace;
+        }
+
+        /* 加载动画 */
+        .app-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #90EE90 0%, #2E8B57 100%);
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        /* 错误提示样式 */
+        .app-error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+            text-align: center;
+            background-color: #fff5f5;
+            color: #c53030;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .error-message {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #718096;
+        }
+
+        .retry-button {
+            padding: 10px 20px;
+            background-color: #0A5E38;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .retry-button:hover {
+            background-color: #0A5E38;
+        }
+    </style>
+</head>
+<body>
+    <!-- 应用加载状态 -->
+    <div id="loading" class="app-loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在加载游客智能管理系统...</div>
+        <div style="margin-top: 20px; font-size: 14px; opacity: 0.8;">
+            版本 2.1.3 | API: http://172.20.10.7:5000
+        </div>
+    </div>
+
+    <!-- 错误状态容器 -->
+    <div id="error" class="app-error" style="display: none;">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title">应用加载失败</div>
+        <div class="error-message" id="error-detail">
+            无法加载应用程序，请检查网络连接或联系系统管理员。
+        </div>
+        <button class="retry-button" onclick="window.location.reload()">重试</button>
+        <div style="margin-top: 20px; font-size: 14px;">
+            如果问题持续存在，请检查：
+            <ul style="text-align: left; margin-top: 10px;">
+                <li>后端API服务是否运行 (http://172.20.10.7:5000)</li>
+                <li>网络连接是否正常</li>
+                <li>浏览器控制台是否有错误信息</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- React应用根节点 -->
+    <div id="root"></div>
+
+    <!-- 应用初始化脚本 -->
+    <script>
+        // 隐藏加载动画，显示React应用
+        function hideLoading() {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.style.display = 'none';
+            }
+        }
+
+        // 显示错误页面
+        function showError(message) {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const errorDetail = document.getElementById('error-detail');
+
+            if (loading) loading.style.display = 'none';
+            if (error) {
+                if (message) errorDetail.textContent = message;
+                error.style.display = 'flex';
+            }
+        }
+
+        // 检查后端API连接
+        async function checkApiConnection() {
+            try {
+                const response = await fetch('http://172.20.10.7:5000/api/status', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                    // 设置超时时间（5秒）
+                    signal: AbortSignal.timeout(5000)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API返回状态码: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('后端API连接正常:', data);
+                return true;
+            } catch (error) {
+                console.error('后端API连接失败:', error);
+                showError(`无法连接到后端API: ${error.message}`);
+                return false;
+            }
+        }
+
+        // 页面加载完成后执行
+        window.addEventListener('load', async function() {
+            // 检查API连接
+            const apiConnected = await checkApiConnection();
+
+            if (apiConnected) {
+                // API连接正常，隐藏加载动画（React应用会自行显示）
+                setTimeout(hideLoading, 500);
+            }
+
+            // 设置全局错误处理器
+            window.addEventListener('error', function(event) {
+                console.error('全局错误捕获:', event.error);
+                showError(`应用程序错误: ${event.error.message}`);
+            });
+
+            // 捕获未处理的Promise拒绝
+            window.addEventListener('unhandledrejection', function(event) {
+                console.error('未处理的Promise拒绝:', event.reason);
+                showError(`应用程序错误: ${event.reason.message || event.reason}`);
+            });
+        });
+
+        // 在React应用加载后隐藏加载动画的回调
+        window.appLoaded = function() {
+            hideLoading();
+        };
+
+        // 在React应用加载失败时的回调
+        window.appLoadFailed = function(error) {
+            showError(`React应用加载失败: ${error.message}`);
+        };
+    </script>
+
+    <!-- 生产环境优化：预加载关键资源 -->
+    <noscript>
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+            text-align: center;
+        ">
+            <h2 style="color: #e53e3e; margin-bottom: 20px;">需要JavaScript支持</h2>
+            <p style="margin-bottom: 20px; font-size: 16px; line-height: 1.6;">
+                游客智能管理系统需要JavaScript才能正常运行。<br/>
+                请启用浏览器中的JavaScript功能，然后刷新页面。
+            </p>
+            <button onclick="window.location.reload()" style="
+                padding: 10px 20px;
+                background: #0A5E38;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 16px;
+                cursor: pointer;
+            ">
+                刷新页面
+            </button>
+            <div style="margin-top: 30px; padding: 20px; background: #f7fafc; border-radius: 8px; max-width: 500px;">
+                <h4 style="margin-bottom: 10px;">如何启用JavaScript</h4>
+                <ul style="text-align: left; padding-left: 20px;">
+                    <li><strong>Chrome:</strong> 设置 → 隐私和安全 → 网站设置 → JavaScript → 启用</li>
+                    <li><strong>Firefox:</strong> 选项 → 隐私与安全 → 权限 → 启用JavaScript</li>
+                    <li><strong>Edge:</strong> 设置 → Cookie和网站权限 → JavaScript → 启用</li>
+                </ul>
+            </div>
+        </div>
+    </noscript>
+</body>
+</html>
