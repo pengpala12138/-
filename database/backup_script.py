@@ -15,7 +15,7 @@ from pathlib import Path
 
 # 配置
 CONFIG = {
-    'mysql_host': '172.20.10.4',
+    'mysql_host': '192.168.69.97',
     'mysql_port': 3306,
     'mysql_user': 'fxt',
     'mysql_password': '515408',

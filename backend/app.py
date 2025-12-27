@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 # 简化的CORS配置
-CORS(app, origins=["http://172.20.10.7:3000"],
+CORS(app, origins=["http://192.168.69.44:3000"],
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization", "Accept"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])

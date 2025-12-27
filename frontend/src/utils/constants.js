@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://172.20.10.7:5000/api';
+export const API_BASE_URL = 'http://192.168.69.44:5000/api';
 
 export const MENU_ITEMS = [
   { key: 'dashboard', label: '仪表板', icon: 'dashboard' },

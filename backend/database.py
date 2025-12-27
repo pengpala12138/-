@@ -41,7 +41,7 @@ class Database:
             mincached=2,
             maxcached=5,
             blocking=True,
-            host='172.20.10.4',
+            host='192.168.69.97',
             port=3306,
             user='fxt',
             password='515408',

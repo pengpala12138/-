@@ -4,12 +4,13 @@
     <file url="file://$PROJECT_DIR$/.idea/queries/Query_2.sql" value="cfbb8003-50df-46d0-b3ed-04aff3de3448" />
     <file url="file://$PROJECT_DIR$/.idea/queries/Query_3.sql" value="671c7c39-898a-4e42-aa6e-e7460e3b735e" />
     <file url="file://$PROJECT_DIR$/.idea/queries/Query_4.sql" value="a972f50b-7283-4d78-a7a4-af83917937a8" />
-    <file url="file://$PROJECT_DIR$/backend/app.py" value="671c7c39-898a-4e42-aa6e-e7460e3b735e" />
-    <file url="file://$PROJECT_DIR$/backend/procedures.py" value="671c7c39-898a-4e42-aa6e-e7460e3b735e" />
-    <file url="file://$PROJECT_DIR$/backend/views.py" value="671c7c39-898a-4e42-aa6e-e7460e3b735e" />
-    <file url="file://$PROJECT_DIR$/database/backup_script.py" value="cfbb8003-50df-46d0-b3ed-04aff3de3448" />
-    <file url="file://$PROJECT_DIR$/database/init.sql" value="671c7c39-898a-4e42-aa6e-e7460e3b735e" />
-    <file url="file://$PROJECT_DIR$/database/procedures.sql" value="671c7c39-898a-4e42-aa6e-e7460e3b735e" />
-    <file url="file://$PROJECT_DIR$/database/views.sql" value="671c7c39-898a-4e42-aa6e-e7460e3b735e" />
+    <file url="file://$PROJECT_DIR$/backend/app.py" value="d5c3b899-a53d-4bf4-a862-2f99401806b4" />
+    <file url="file://$PROJECT_DIR$/backend/procedures.py" value="d5c3b899-a53d-4bf4-a862-2f99401806b4" />
+    <file url="file://$PROJECT_DIR$/backend/test.py" value="d5c3b899-a53d-4bf4-a862-2f99401806b4" />
+    <file url="file://$PROJECT_DIR$/backend/views.py" value="d5c3b899-a53d-4bf4-a862-2f99401806b4" />
+    <file url="file://$PROJECT_DIR$/database/backup_script.py" value="d5c3b899-a53d-4bf4-a862-2f99401806b4" />
+    <file url="file://$PROJECT_DIR$/database/init.sql" value="d5c3b899-a53d-4bf4-a862-2f99401806b4" />
+    <file url="file://$PROJECT_DIR$/database/procedures.sql" value="d5c3b899-a53d-4bf4-a862-2f99401806b4" />
+    <file url="file://$PROJECT_DIR$/database/views.sql" value="d5c3b899-a53d-4bf4-a862-2f99401806b4" />
   </component>
 </project>

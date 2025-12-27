@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://172.20.10.7:5000/api';
+const API_BASE_URL = 'http://192.168.69.44:5000/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -110,7 +110,7 @@ export const apiRequest = async (method, endpoint, data = null) => {
   }
 
   try {
-    const response = await fetch(`http://172.20.10.7:5000${endpoint}`, options);
+    const response = await fetch(`http://192.168.69.44:5000${endpoint}`, options);
     const result = await response.json();
 
     if (!response.ok) {

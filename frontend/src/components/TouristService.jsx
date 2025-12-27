@@ -31,7 +31,7 @@ const TouristService = () => {
     setTableLoading(true);
     try {
       // 这里的 URL 对应后端新写的 /api/eco-stats/<role> 接口
-      const res = await axios.get(`http://172.20.10.7:5000/api/eco-stats/${currentRole}`);
+      const res = await axios.get(`http://192.168.69.44:5000/api/eco-stats/${currentRole}`);
       setEcoData(res.data || []);
     } catch (error) {
       message.error('获取生态数据失败');
@@ -48,7 +48,7 @@ const TouristService = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const res = await axios.post('http://172.20.10.7:5000/api/ecological-feedback', values);
+      const res = await axios.post('http://192.168.69.44:5000/api/ecological-feedback', values);
       if (res.data.success) {
         message.success('反馈提交成功，感谢您的参与！');
         form.resetFields();

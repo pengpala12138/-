@@ -100,7 +100,7 @@ const TrajectoryMonitoring = () => {
     setLoading(true);
     try {
       console.log('开始获取轨迹数据...');
-      const response = await fetch('http://172.20.10.7:5000/api/trajectories');
+      const response = await fetch('http://192.168.69.44:5000/api/trajectories');
       const result = await response.json();
       console.log('轨迹API返回:', result);
 
