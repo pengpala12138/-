@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物种管理 - 生物多样性监测系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* ========== 全局变量（同步index.html的北林配色） ========== */
+        :root {
+            --bjfu-primary: #0A5E38;        /* 北林深绿 - 主色调（同步index.html的--bfu-green-dark） */
+            --bjfu-secondary: #147D4C;      /* 北林hover绿 - 辅助色（同步index.html的--bfu-green-hover） */
+            --bjfu-light: #E6F4EA;          /* 浅绿背景（同步index.html的--bfu-green-light） */
+            --bjfu-accent: #FFC107;         /* 金色点缀（保留原有） */
+            --bjfu-dark: #0A5E38;           /* 深绿（与主色调一致） */
+            --bjfu-text: #333333;           /* 主要文字色（同步index.html的--bfu-text） */
+            --bjfu-text-light: #666666;     /* 次要文字色 */
+            --bjfu-border: #B3E0C2;         /* 边框色（基于浅绿调整） */
+            --bjfu-shadow: rgba(10, 94, 56, 0.1); /* 阴影（基于主色调） */
+            --bjfu-gradient: linear-gradient(135deg, #0A5E38 0%, #147D4C 100%); /* 渐变（主色到hover色） */
+        }
+
+        /* ========== 全局样式重置 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', 'Segoe UI', sans-serif; /* 优先使用index.html的字体 */
+            background-color: #F5F7F6; /* 同步index.html的--bfu-gray */
+            color: var(--bjfu-text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ========== 导航栏样式 ========== */
+        .navbar {
+            background: var(--bjfu-gradient) !important;
+            box-shadow: 0 4px 12px var(--bjfu-shadow);
+            padding: 0.8rem 0;
+            border-bottom: 3px solid var(--bjfu-accent);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1030;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #FFFFFF 0%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            padding-left: 45px;
+        }
+
+        .navbar-brand::before {
+            content: "🌳";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.8rem;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            margin: 0 0.2rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .navbar-nav .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            color: white !important;
+        }
+
+        /* ========== 侧边栏调整 ========== */
+        .sidebar {
+            background-color: #fff;
+            border-right: 1px solid var(--bjfu-border);
+            height: 100vh;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            width: 220px;
+            padding-top: 20px;
+            box-shadow: 2px 0 8px var(--bjfu-shadow);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--bjfu-border);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h4 {
+            font-weight: 600;
+            color: var(--bjfu-primary);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 20px;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-menu a {
+            color: var(--bjfu-text);
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: var(--bjfu-primary);
+            color: white;
+        }
+
+        .sidebar-menu a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* ========== 主内容区调整 ========== */
+        .main-content {
+            margin-left: 220px;
+            margin-top: 56px;
+            padding: 30px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--bjfu-dark);
+            position: relative;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--bjfu-gradient);
+            border-radius: 2px;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb-item a {
+            color: var(--bjfu-primary);
+            text-decoration: none;
+        }
+
+        /* ========== 卡片样式 ========== */
+        .content-card {
+            background: white;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--bjfu-primary);
+            box-shadow: 0 8px 20px rgba(10, 94, 56, 0.15);
+        }
+
+        .card {
+            border: 2px solid transparent;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--bjfu-primary);
+            box-shadow: 0 8px 20px rgba(10, 94, 56, 0.15);
+        }
+
+        .card-header-park {
+            background: var(--bjfu-gradient) !important;
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: none;
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .card-header-park::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: skewX(-15deg);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ========== 按钮样式 ========== */
+        .btn-park {
+            background: var(--bjfu-gradient);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(10, 94, 56, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-park::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-park:hover {
+            background: linear-gradient(135deg, #147D4C 0%, #0A5E38 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(10, 94, 56, 0.3);
+        }
+
+        .btn-park:hover::before {
+            left: 100%;
+        }
+
+        .btn-park:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(10, 94, 56, 0.2);
+        }
+
+        .btn-outline-primary {
+            border-color: var(--bjfu-primary);
+            color: var(--bjfu-primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--bjfu-primary);
+            border-color: var(--bjfu-primary);
+        }
+
+        .btn-outline-danger {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        /* ========== 表格样式 ========== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--bjfu-gradient);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border: none;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--bjfu-border);
+            border-left: 1px solid var(--bjfu-border);
+            border-right: 1px solid var(--bjfu-border);
+        }
+
+        .data-table tr:hover {
+            background-color: var(--bjfu-light);
+            transform: scale(1.002);
+            transition: all 0.2s ease;
+        }
+
+        /* ========== 徽章样式调整 ========== */
+        .badge {
+            padding: 0.4em 0.8em;
+            font-weight: 600;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+
+        .badge-danger-custom {
+            background-color: #dc3545 !important;
+        }
+
+        .badge-warning-custom {
+            background-color: var(--bjfu-accent) !important;
+            color: #333;
+        }
+
+        .badge-success-custom {
+            background-color: var(--bjfu-primary) !important;
+        }
+
+        /* ========== 分页调整 ========== */
+        .pagination-custom {
+            justify-content: end;
+            margin-top: 20px;
+        }
+
+        .pagination-custom .page-link {
+            color: var(--bjfu-text);
+            border-radius: 8px !important;
+            margin: 0 4px;
+            border: 1px solid var(--bjfu-border);
+            transition: all 0.3s ease;
+        }
+
+        .pagination-custom .page-link:hover {
+            color: white;
+            background-color: var(--bjfu-secondary);
+            border-color: var(--bjfu-secondary);
+        }
+
+        .pagination-custom .page-item.active .page-link {
+            background-color: var(--bjfu-primary);
+            border-color: var(--bjfu-primary);
+            color: white;
+        }
+
+        /* ========== 模态框样式 ========== */
+        .modal-header.card-header-park {
+            background: var(--bjfu-gradient) !important;
+            color: white;
+            border-radius: 0;
+        }
+
+        .modal-header .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(10, 94, 56, 0.2);
+        }
+
+        /* ========== 表单控件样式 ========== */
+        .form-control, .form-select {
+            border: 1px solid var(--bjfu-border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--bjfu-primary);
+            box-shadow: 0 0 0 0.25rem rgba(10, 94, 56, 0.15);
+            outline: none;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--bjfu-dark);
+            margin-bottom: 0.3rem;
+        }
+
+        .form-label span.text-danger {
+            color: #dc3545;
+        }
+
+        /* ========== 北林特色装饰元素 ========== */
+        .bjfu-decoration {
+            position: relative;
+        }
+
+        .bjfu-decoration::before {
+            content: "🌿";
+            position: absolute;
+            font-size: 1.2rem;
+            opacity: 0.3;
+        }
+
+        /* ========== 页脚样式 ========== */
+        footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            background: var(--bjfu-primary);
+            color: white;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-left: 220px;
+        }
+
+        /* ========== 响应式设计 ========== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 180px;
+            }
+
+            .main-content, footer {
+                margin-left: 180px;
+            }
+
+            .navbar-brand {
+                font-size: 1.2rem;
+                padding-left: 35px;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .btn-park {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content, footer {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* ========== 打印样式 ========== */
+        @media print {
+            .btn-park, .navbar, .sidebar, .modal, footer {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+                margin-top: 0;
+                padding: 0;
+            }
+
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏（北林主题） -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">生物多样性监测系统</a>
+            <div class="navbar-collapse">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/species">物种管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/monitor">监测记录</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/habitat">栖息地分析</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 退出登录</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-tree me-2"></i>功能菜单</h4>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/"><i class="bi bi-house"></i>首页</a></li>
+            <li><a href="/species" class="active"><i class="bi bi-paw"></i>物种管理</a></li>
+            <li><a href="/monitor"><i class="bi bi-journal-text"></i>监测记录</a></li>
+            <li><a href="/habitat"><i class="bi bi-map"></i>栖息地分析</a></li>
+        </ul>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- 页面头部（北林主题） -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="page-title">物种信息管理</h2>
+            <button class="btn btn-park" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="bi bi-plus me-1"></i>新增物种
+            </button>
+        </div>
+
+        <!-- 搜索区 -->
+        <div class="content-card">
+            <form id="searchForm" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-medium">物种名称</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="searchName" placeholder="请输入物种名称">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">保护级别</label>
+                    <select class="form-select" id="searchLevel">
+                        <option value="">全部级别</option>
+                        <option value="国家一级">国家一级</option>
+                        <option value="国家二级">国家二级</option>
+                        <option value="无">无</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-medium">&nbsp;</label>
+                    <button type="button" class="btn btn-park w-100" onclick="searchSpecies()">
+                        <i class="bi bi-search me-1"></i>查询
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-medium">&nbsp;</label>
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="resetSearch()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>重置
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 数据表格区 -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead class="table-success">
+                            <tr>
+                                <th>物种ID</th>
+                                <th>中文名称</th>
+                                <th>拉丁学名</th>
+                                <th>保护级别</th>
+                                <th>生存环境</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="speciesTable">
+                            <!-- 数据由JS动态渲染 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <nav class="pagination-custom">
+                    <ul class="pagination" id="pagination">
+                        <!-- 分页由JS动态渲染 -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增物种弹窗（北林主题） -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header card-header-park">
+                    <h5 class="modal-title">新增物种信息</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">中文名称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addChineseName" required placeholder="如：大熊猫">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">拉丁学名 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addLatinName" required placeholder="如：Ailuropoda melanoleuca">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">界 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addKingdom" required placeholder="如：动物界">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">门 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addPhylum" required placeholder="如：脊索动物门">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">纲 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addClass" required placeholder="如：哺乳纲">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">目 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addOrder" required placeholder="如：食肉目">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">科 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addFamily" required placeholder="如：熊科">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">属 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addGenus" required placeholder="如：大熊猫属">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium">保护级别 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="addProtectionLevel" required>
+                                <option value="">请选择</option>
+                                <option value="国家一级">国家一级</option>
+                                <option value="国家二级">国家二级</option>
+                                <option value="无">无</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium">种 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addSpecies" required placeholder="如：大熊猫种">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">生存习性 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="addLivingHabits" rows="2" required placeholder="如：独居，喜食竹类，栖息于高山竹林"></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">分布区域/生存环境 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="addDistribution" rows="2" required placeholder="如：四川卧龙、陕西秦岭、甘肃白水江"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-park" onclick="saveSpecies()">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑物种弹窗（北林主题） -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header card-header-park">
+                    <h5 class="modal-title">编辑物种信息</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm" class="row g-3">
+                        <!-- 隐藏字段存储物种ID -->
+                        <input type="hidden" id="editSpeciesId">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">中文名称 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editChineseName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">拉丁学名 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editLatinName" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">界 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editKingdom" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">门 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editPhylum" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">纲 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editClass" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">目 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editOrder" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">科 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editFamily" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-medium">属 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editGenus" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium">保护级别 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editProtectionLevel" required>
+                                <option value="">请选择</option>
+                                <option value="国家一级">国家一级</option>
+                                <option value="国家二级">国家二级</option>
+                                <option value="无">无</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium">种 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editSpecies" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">生存习性 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="editLivingHabits" rows="2" required></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">分布区域/生存环境 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="editDistribution" rows="2" required></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-park" onclick="updateSpecies()">更新</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <p>© 2025 北京林业大学 - 生物多样性监测系统 | 版权所有</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局分页参数
+        let currentPage = 1;
+        const pageSize = 10;
+        let totalCount = 0;
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('user');
+            alert('已退出登录');
+        }
+
+        // 页面加载时加载物种数据
+        window.onload = function() {
+            loadSpeciesData();
+        }
+
+        // 加载物种数据（核心）
+        function loadSpeciesData() {
+            // 获取筛选条件
+            const keyword = document.getElementById('searchName').value.trim();
+            const protectionLevel = document.getElementById('searchLevel').value;
+
+            // 构建请求参数
+            const params = new URLSearchParams({
+                page: currentPage,
+                size: pageSize,
+                keyword: keyword,
+                protectionLevel: protectionLevel
+            });
+
+            // 调用后端接口
+            fetch(`/api/species?${params}`)
+                .then(res => res.json())
+                .then(response => {
+                    if (response.code === 200) {
+                        totalCount = response.total;
+                        // 渲染表格
+                        renderSpeciesTable(response.data);
+                        // 渲染分页
+                        renderPagination();
+                    } else {
+                        alert(`数据加载失败：${response.msg}`);
+                    }
+                })
+                .catch(err => {
+                    alert('网络异常，无法加载数据：' + err.message);
+                });
+        }
+
+        // 渲染物种表格
+        function renderSpeciesTable(speciesList) {
+            const tableBody = document.getElementById('speciesTable');
+            tableBody.innerHTML = '';
+
+            if (speciesList.length === 0) {
+                const emptyTr = document.createElement('tr');
+                emptyTr.innerHTML = `<td colspan="6" class="text-center text-muted py-3">暂无物种数据</td>`;
+                tableBody.appendChild(emptyTr);
+                return;
+            }
+
+            // 遍历数据生成行
+            speciesList.forEach(item => {
+                const tr = document.createElement('tr');
+                // 保护级别徽章样式
+                let badgeClass = '';
+                if (item.protectionLevel === '国家一级') badgeClass = 'badge-danger-custom';
+                else if (item.protectionLevel === '国家二级') badgeClass = 'badge-warning-custom';
+                else badgeClass = 'badge-success-custom';
+
+                tr.innerHTML = `
+                    <td>${item.speciesId}</td>
+                    <td>${item.chineseName}</td>
+                    <td>${item.latinName}</td>
+                    <td><span class="badge ${badgeClass}">${item.protectionLevel}</span></td>
+                    <td>${item.distribution || '-'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditModal('${item.speciesId}')">
+                            <i class="bi bi-pencil"></i>编辑
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSpecies('${item.speciesId}')">
+                            <i class="bi bi-trash"></i>删除
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // 渲染分页
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            const totalPages = Math.ceil(totalCount / pageSize);
+
+            // 上一页
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage - 1})">上一页</a>`;
+            pagination.appendChild(prevLi);
+
+            // 页码（显示当前页前后2页）
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            for (let i = startPage; i <= endPage; i++) {
+                const pageLi = document.createElement('li');
+                pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                pageLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${i})">${i}</a>`;
+                pagination.appendChild(pageLi);
+            }
+
+            // 下一页
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="changePage(${currentPage + 1})">下一页</a>`;
+            pagination.appendChild(nextLi);
+        }
+
+        // 切换分页
+        function changePage(page) {
+            const totalPages = Math.ceil(totalCount / pageSize);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadSpeciesData();
+        }
+
+        // 搜索物种
+        function searchSpecies() {
+            currentPage = 1; // 搜索后重置为第一页
+            loadSpeciesData();
+        }
+
+        // 重置搜索
+        function resetSearch() {
+            document.getElementById('searchForm').reset();
+            currentPage = 1;
+            loadSpeciesData();
+        }
+
+        // 保存新增物种
+        function saveSpecies() {
+            // 获取表单数据
+            const formData = {
+                chineseName: document.getElementById('addChineseName').value.trim(),
+                latinName: document.getElementById('addLatinName').value.trim(),
+                kingdom: document.getElementById('addKingdom').value.trim(),
+                phylum: document.getElementById('addPhylum').value.trim(),
+                class: document.getElementById('addClass').value.trim(),
+                order: document.getElementById('addOrder').value.trim(),
+                family: document.getElementById('addFamily').value.trim(),
+                genus: document.getElementById('addGenus').value.trim(),
+                species: document.getElementById('addSpecies').value.trim(),
+                protectionLevel: document.getElementById('addProtectionLevel').value,
+                livingHabits: document.getElementById('addLivingHabits').value.trim(),
+                distribution: document.getElementById('addDistribution').value.trim()
+            };
+
+            // 表单验证
+            if (!formData.chineseName || !formData.latinName || !formData.kingdom) {
+                alert('请填写所有必填字段（标*的字段）');
+                return;
+            }
+
+            // 调用新增接口
+            fetch('/api/species', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.code === 200) {
+                        alert(response.msg);
+                        // 关闭弹窗
+                        bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
+                        // 重置表单
+                        document.getElementById('addForm').reset();
+                        // 重新加载数据
+                        loadSpeciesData();
+                    } else {
+                        alert(`新增失败：${response.msg}`);
+                    }
+                })
+                .catch(err => {
+                    alert('网络异常，新增失败：' + err.message);
+                });
+        }
+
+        // 打开编辑弹窗并加载数据
+        function openEditModal(speciesId) {
+            // 先查询该物种的详情
+            fetch(`/api/species?page=1&size=1&keyword=&protectionLevel=&speciesId=${speciesId}`)
+                .then(res => res.json())
+                .then(response => {
+                    if (response.code === 200 && response.data.length > 0) {
+                        const item = response.data[0];
+                        // 填充编辑表单
+                        document.getElementById('editSpeciesId').value = item.speciesId;
+                        document.getElementById('editChineseName').value = item.chineseName;
+                        document.getElementById('editLatinName').value = item.latinName;
+                        document.getElementById('editKingdom').value = item.kingdom;
+                        document.getElementById('editPhylum').value = item.phylum;
+                        document.getElementById('editClass').value = item.class;
+                        document.getElementById('editOrder').value = item.order;
+                        document.getElementById('editFamily').value = item.family;
+                        document.getElementById('editGenus').value = item.genus;
+                        document.getElementById('editSpecies').value = item.species;
+                        document.getElementById('editProtectionLevel').value = item.protectionLevel;
+                        document.getElementById('editLivingHabits').value = item.livingHabits;
+                        document.getElementById('editDistribution').value = item.distribution;
+
+                        // 打开弹窗
+                        const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                        editModal.show();
+                    } else {
+                        alert('获取物种详情失败');
+                    }
+                })
+                .catch(err => {
+                    alert('网络异常，无法获取物种详情：' + err.message);
+                });
+        }
+
+        // 更新物种信息
+        function updateSpecies() {
+            // 获取表单数据
+            const speciesId = document.getElementById('editSpeciesId').value;
+            const formData = {
+                chineseName: document.getElementById('editChineseName').value.trim(),
+                latinName: document.getElementById('editLatinName').value.trim(),
+                kingdom: document.getElementById('editKingdom').value.trim(),
+                phylum: document.getElementById('editPhylum').value.trim(),
+                class: document.getElementById('editClass').value.trim(),
+                order: document.getElementById('editOrder').value.trim(),
+                family: document.getElementById('editFamily').value.trim(),
+                genus: document.getElementById('editGenus').value.trim(),
+                species: document.getElementById('editSpecies').value.trim(),
+                protectionLevel: document.getElementById('editProtectionLevel').value,
+                livingHabits: document.getElementById('editLivingHabits').value.trim(),
+                distribution: document.getElementById('editDistribution').value.trim()
+            };
+
+            // 表单验证
+            if (!formData.chineseName || !formData.latinName || !formData.kingdom) {
+                alert('请填写所有必填字段（标*的字段）');
+                return;
+            }
+
+            // 调用更新接口
+            fetch(`/api/species/${speciesId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.code === 200) {
+                        alert(response.msg);
+                        // 关闭弹窗
+                        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                        // 重新加载数据
+                        loadSpeciesData();
+                    } else {
+                        alert(`更新失败：${response.msg}`);
+                    }
+                })
+                .catch(err => {
+                    alert('网络异常，更新失败：' + err.message);
+                });
+        }
+
+        // 删除物种
+        function deleteSpecies(speciesId) {
+            if (!confirm(`确定要删除物种【${speciesId}】吗？删除后不可恢复！`)) {
+                return;
+            }
+
+            // 调用删除接口
+            fetch(`/api/species/${speciesId}`, {
+                method: 'DELETE'
+            })
+                .then(res => res.json())
+                .then(response => {
+                    if (response.code === 200) {
+                        alert(response.msg);
+                        // 重新加载数据
+                        loadSpeciesData();
+                    } else {
+                        alert(`删除失败：${response.msg}`);
+                    }
+                })
+                .catch(err => {
+                    alert('网络异常，删除失败：' + err.message);
+                });
+        }
+    </script>
+</body>
+</html>

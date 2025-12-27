@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>监测记录 - 生物多样性监测系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* ========== 全局变量（北林配色） ========== */
+        :root {
+            --bjfu-primary: #0A5E38;        /* 北林深绿 - 主色调 */
+            --bjfu-secondary: #147D4C;      /* 北林hover绿 - 辅助色 */
+            --bjfu-light: #E6F4EA;          /* 浅绿背景 */
+            --bjfu-accent: #FFC107;         /* 金色点缀 */
+            --bjfu-dark: #0A5E38;           /* 深绿（与主色调一致） */
+            --bjfu-text: #333333;           /* 主要文字色 */
+            --bjfu-text-light: #666666;     /* 次要文字色 */
+            --bjfu-border: #B3E0C2;         /* 边框色 */
+            --bjfu-shadow: rgba(10, 94, 56, 0.1); /* 阴影 */
+            --bjfu-gradient: linear-gradient(135deg, #0A5E38 0%, #147D4C 100%); /* 渐变 */
+        }
+
+        /* ========== 全局样式重置 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background-color: #F5F7F6;
+            color: var(--bjfu-text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ========== 导航栏样式 ========== */
+        .navbar {
+            background: var(--bjfu-gradient) !important;
+            box-shadow: 0 4px 12px var(--bjfu-shadow);
+            padding: 0.8rem 0;
+            border-bottom: 3px solid var(--bjfu-accent);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1030;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #FFFFFF 0%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            padding-left: 45px;
+        }
+
+        .navbar-brand::before {
+            content: "🌳";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.8rem;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            margin: 0 0.2rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .navbar-nav .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            color: white !important;
+        }
+
+        /* ========== 侧边栏调整 ========== */
+        .sidebar {
+            background-color: #fff;
+            border-right: 1px solid var(--bjfu-border);
+            height: 100vh;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            width: 220px;
+            padding-top: 20px;
+            box-shadow: 2px 0 8px var(--bjfu-shadow);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--bjfu-border);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h4 {
+            font-weight: 600;
+            color: var(--bjfu-primary);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 20px;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-menu a {
+            color: var(--bjfu-text);
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: var(--bjfu-primary);
+            color: white;
+        }
+
+        .sidebar-menu a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* ========== 主内容区调整 ========== */
+        .main-content {
+            margin-left: 220px;
+            margin-top: 56px;
+            padding: 30px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--bjfu-dark);
+            position: relative;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--bjfu-gradient);
+            border-radius: 2px;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb-item a {
+            color: var(--bjfu-primary);
+            text-decoration: none;
+        }
+
+        /* ========== 卡片样式 ========== */
+        .content-card {
+            background: white;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--bjfu-primary);
+            box-shadow: 0 8px 20px rgba(10, 94, 56, 0.15);
+        }
+
+        .card {
+            border: 2px solid transparent;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--bjfu-primary);
+            box-shadow: 0 8px 20px rgba(10, 94, 56, 0.15);
+        }
+
+        .card-header-park {
+            background: var(--bjfu-gradient) !important;
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: none;
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .card-header-park::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: skewX(-15deg);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ========== 按钮样式 ========== */
+        .btn-park {
+            background: var(--bjfu-gradient);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(10, 94, 56, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-park::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-park:hover {
+            background: linear-gradient(135deg, #147D4C 0%, #0A5E38 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(10, 94, 56, 0.3);
+        }
+
+        .btn-park:hover::before {
+            left: 100%;
+        }
+
+        .btn-park:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(10, 94, 56, 0.2);
+        }
+
+        .btn-outline-primary {
+            border-color: var(--bjfu-primary);
+            color: var(--bjfu-primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--bjfu-primary);
+            border-color: var(--bjfu-primary);
+        }
+
+        .btn-outline-danger {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .btn-outline-danger:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        /* ========== 表格样式 ========== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--bjfu-gradient);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border: none;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--bjfu-border);
+            border-left: 1px solid var(--bjfu-border);
+            border-right: 1px solid var(--bjfu-border);
+        }
+
+        .data-table tr:hover {
+            background-color: var(--bjfu-light);
+            transform: scale(1.002);
+            transition: all 0.2s ease;
+        }
+
+        /* ========== 徽章样式调整 ========== */
+        .badge {
+            padding: 0.4em 0.8em;
+            font-weight: 600;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+
+        .badge-danger-custom {
+            background-color: #dc3545 !important;
+        }
+
+        .badge-warning-custom {
+            background-color: var(--bjfu-accent) !important;
+            color: #333;
+        }
+
+        .badge-success-custom {
+            background-color: var(--bjfu-primary) !important;
+        }
+
+        /* ========== 分页调整 ========== */
+        .pagination-custom {
+            justify-content: end;
+            margin-top: 20px;
+        }
+
+        .pagination-custom .page-link {
+            color: var(--bjfu-text);
+            border-radius: 8px !important;
+            margin: 0 4px;
+            border: 1px solid var(--bjfu-border);
+            transition: all 0.3s ease;
+        }
+
+        .pagination-custom .page-link:hover {
+            color: white;
+            background-color: var(--bjfu-secondary);
+            border-color: var(--bjfu-secondary);
+        }
+
+        .pagination-custom .page-item.active .page-link {
+            background-color: var(--bjfu-primary);
+            border-color: var(--bjfu-primary);
+            color: white;
+        }
+
+        /* ========== 模态框样式 ========== */
+        .modal-header.card-header-park {
+            background: var(--bjfu-gradient) !important;
+            color: white;
+            border-radius: 0;
+        }
+
+        .modal-header .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(10, 94, 56, 0.2);
+        }
+
+        /* ========== 表单控件样式 ========== */
+        .form-control, .form-select {
+            border: 1px solid var(--bjfu-border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--bjfu-primary);
+            box-shadow: 0 0 0 0.25rem rgba(10, 94, 56, 0.15);
+            outline: none;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--bjfu-dark);
+            margin-bottom: 0.3rem;
+        }
+
+        .form-label span.text-danger {
+            color: #dc3545;
+        }
+
+        /* ========== 空状态/加载状态 ========== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #cbd5e1;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--bjfu-primary);
+        }
+
+        /* ========== 页脚样式 ========== */
+        footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            background: var(--bjfu-primary);
+            color: white;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-left: 220px;
+        }
+
+        /* ========== 响应式设计 ========== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 180px;
+            }
+
+            .main-content, footer {
+                margin-left: 180px;
+            }
+
+            .navbar-brand {
+                font-size: 1.2rem;
+                padding-left: 35px;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .btn-park {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content, footer {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* ========== 打印样式 ========== */
+        @media print {
+            .btn-park, .navbar, .sidebar, .modal, footer {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+                margin-top: 0;
+                padding: 0;
+            }
+
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏（北林主题） -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">生物多样性监测系统</a>
+            <div class="navbar-collapse">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/species">物种管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/monitor">监测记录</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/habitat">栖息地分析</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 退出登录</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-tree me-2"></i>功能菜单</h4>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/"><i class="bi bi-house"></i>首页</a></li>
+            <li><a href="/species"><i class="bi bi-paw"></i>物种管理</a></li>
+            <li><a href="/monitor" class="active"><i class="bi bi-journal-text"></i>监测记录</a></li>
+            <li><a href="/habitat"><i class="bi bi-map"></i>栖息地分析</a></li>
+        </ul>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <!-- 页面头部（北林主题） -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="page-title">物种监测记录管理</h2>
+            <button class="btn btn-park" data-bs-toggle="modal" data-bs-target="#addModal">
+                <i class="bi bi-plus me-1"></i>新增记录
+            </button>
+        </div>
+
+        <!-- 搜索区 -->
+        <div class="content-card">
+            <form id="searchForm" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">物种名称</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="searchSpecies" placeholder="请输入物种名称">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-medium">监测日期</label>
+                    <input type="date" class="form-control" id="searchDate">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-medium">监测区域</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-map-marker"></i></span>
+                        <input type="text" class="form-control" id="searchRegion" placeholder="请输入监测区域">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-medium">数据状态</label>
+                    <select class="form-select" id="searchStatus">
+                        <option value="">全部状态</option>
+                        <option value="有效">已审核</option>
+                        <option value="待核实">待审核</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-medium">&nbsp;</label>
+                    <button type="button" class="btn btn-park w-100" onclick="searchRecord()">
+                        <i class="bi bi-search me-1"></i>查询
+                    </button>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label fw-medium">&nbsp;</label>
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="resetSearch()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>重置
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 数据表格区 -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>记录ID</th>
+                                <th>物种名称</th>
+                                <th>监测日期</th>
+                                <th>监测区域</th>
+                                <th>数量</th>
+                                <th>监测人员</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordTable">
+                            <!-- 加载中状态 -->
+                            <tr id="loadingRow">
+                                <td colspan="8" class="loading">
+                                    <i class="bi bi-hourglass-half me-2"></i>加载中，请稍候...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <nav class="pagination-custom">
+                    <ul class="pagination" id="pagination">
+                        <!-- 分页内容由JS动态生成 -->
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增记录弹窗（北林主题） -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header card-header-park">
+                    <h5 class="modal-title fw-bold">新增监测记录</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="addForm" class="row g-3 needs-validation" novalidate>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">物种名称 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="addSpecies" required>
+                                <option value="">请选择物种</option>
+                                <!-- 物种列表由JS动态加载 -->
+                            </select>
+                            <div class="invalid-feedback">请选择物种</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">监测日期 <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="addDate" required>
+                            <div class="invalid-feedback">请选择监测日期</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">监测区域 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addRegion" placeholder="如：卧龙自然保护区核心区" required>
+                            <div class="invalid-feedback">请输入监测区域</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">监测方式 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="addMethod" required>
+                                <option value="">请选择监测方式</option>
+                                <option value="红外相机">红外相机</option>
+                                <option value="人工巡查">人工巡查</option>
+                                <option value="无人机">无人机</option>
+                            </select>
+                            <div class="invalid-feedback">请选择监测方式</div>
+                        </div>
+                        <!-- 新增：经纬度输入框 -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">经度 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="addLongitude" step="0.000001" min="-180" max="180" placeholder="如：103.456789" required>
+                            <div class="invalid-feedback">请输入有效经度（范围-180~180）</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">纬度 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="addLatitude" step="0.000001" min="-90" max="90" placeholder="如：30.123456" required>
+                            <div class="invalid-feedback">请输入有效纬度（范围-90~90）</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">数量 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="addCount" min="1" required>
+                            <div class="invalid-feedback">请输入有效数量（至少1）</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">监测人员 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="addPerson" readonly required>
+                            <div class="invalid-feedback">请先选择记录人ID</div>
+                        </div>
+                        <!-- 修改：设备编号改为下拉选择（从monitor_device读取） -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">设备编号 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="addDeviceId" required>
+                                <option value="">请选择设备编号</option>
+                                <!-- 设备列表由JS动态加载 -->
+                            </select>
+                            <div class="invalid-feedback">请选择设备编号</div>
+                        </div>
+                        <!-- 核心修改：记录人ID改为下拉选择框 -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">记录人ID <span class="text-danger">*</span></label>
+                            <select class="form-select" id="addRecorderId" required>
+                                <option value="">请选择记录人ID</option>
+                                <!-- 记录人列表由JS动态加载 -->
+                            </select>
+                            <div class="invalid-feedback">请选择记录人ID</div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">监测内容 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="addContent" rows="2" placeholder="如：活动正常，食物充足，发现5只个体等" required></textarea>
+                            <div class="invalid-feedback">请输入监测内容</div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">分析结论</label>
+                            <textarea class="form-control" id="addConclusion" rows="2" placeholder="可选，分析师补充内容"></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">备注</label>
+                            <textarea class="form-control" id="addRemark" rows="2" placeholder="可选"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-park" onclick="saveRecord()">提交</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑记录弹窗（北林主题） -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header card-header-park">
+                    <h5 class="modal-title fw-bold">编辑监测记录</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="editForm" class="row g-3 needs-validation" novalidate>
+                        <input type="hidden" id="editRecordId">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">物种名称 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editSpecies" required>
+                                <option value="">请选择物种</option>
+                                <!-- 物种列表由JS动态加载 -->
+                            </select>
+                            <div class="invalid-feedback">请选择物种</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">监测日期 <span class="text-danger">*</span></label>
+                            <input type="datetime-local" class="form-control" id="editDate" required>
+                            <div class="invalid-feedback">请选择监测日期</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">监测区域 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editRegion" placeholder="如：卧龙自然保护区核心区" required>
+                            <div class="invalid-feedback">请输入监测区域</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">监测方式 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editMethod" required>
+                                <option value="">请选择监测方式</option>
+                                <option value="红外相机">红外相机</option>
+                                <option value="人工巡查">人工巡查</option>
+                                <option value="无人机">无人机</option>
+                            </select>
+                            <div class="invalid-feedback">请选择监测方式</div>
+                        </div>
+                        <!-- 新增：经纬度输入框 -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">经度 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editLongitude" step="0.000001" min="-180" max="180" required>
+                            <div class="invalid-feedback">请输入有效经度（范围-180~180）</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">纬度 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editLatitude" step="0.000001" min="-90" max="90" required>
+                            <div class="invalid-feedback">请输入有效纬度（范围-90~90）</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">数量 <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editCount" min="1" required>
+                            <div class="invalid-feedback">请输入有效数量（至少1）</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">监测人员 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editPerson" readonly required>
+                            <div class="invalid-feedback">请先选择记录人ID</div>
+                        </div>
+                        <!-- 修改：设备编号改为下拉选择 -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">设备编号 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editDeviceId" required>
+                                <option value="">请选择设备编号</option>
+                                <!-- 设备列表由JS动态加载 -->
+                            </select>
+                            <div class="invalid-feedback">请选择设备编号</div>
+                        </div>
+                        <!-- 核心修改：记录人ID改为下拉选择框 -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">记录人ID <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editRecorderId" required>
+                                <option value="">请选择记录人ID</option>
+                                <!-- 记录人列表由JS动态加载 -->
+                            </select>
+                            <div class="invalid-feedback">请选择记录人ID</div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">监测内容 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="editContent" rows="2" required></textarea>
+                            <div class="invalid-feedback">请输入监测内容</div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">分析结论</label>
+                            <textarea class="form-control" id="editConclusion" rows="2" placeholder="可选，分析师补充内容"></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">数据状态 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editStatus" required>
+                                <option value="待核实">待审核</option>
+                                <option value="有效">已审核</option>
+                            </select>
+                            <div class="invalid-feedback">请选择数据状态</div>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-medium">备注</label>
+                            <textarea class="form-control" id="editRemark" rows="2" placeholder="可选"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-park" onclick="updateRecord()">更新</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <p>© 2025 北京林业大学 - 生物多样性监测系统 | 版权所有</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+        let totalRecords = 0;
+        let sysUserList = []; // 新增：存储系统用户列表（记录人ID+姓名）
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化表单验证
+            initFormValidation();
+
+            // 加载物种列表
+            loadSpeciesList();
+            // 加载设备列表
+            loadDeviceList();
+            // 新增：加载系统用户列表（记录人ID）
+            loadSysUserList();
+
+            // 加载监测记录列表
+            loadRecordList();
+
+            // 设置默认日期为今天
+            const today = new Date();
+            const formattedDate = today.toISOString().slice(0, 16);
+            document.getElementById('addDate').value = formattedDate;
+
+            // 绑定记录人ID选择事件（新增弹窗）
+            document.getElementById('addRecorderId').addEventListener('change', function() {
+                fillPersonName('add');
+            });
+
+            // 绑定记录人ID选择事件（编辑弹窗）
+            document.getElementById('editRecorderId').addEventListener('change', function() {
+                fillPersonName('edit');
+            });
+        });
+
+        // 初始化表单验证
+        function initFormValidation() {
+            // 新增表单
+            const addForm = document.getElementById('addForm');
+            addForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }, false);
+
+            // 编辑表单
+            const editForm = document.getElementById('editForm');
+            editForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }, false);
+        }
+
+        // 新增：加载系统用户列表（记录人ID）
+        function loadSysUserList() {
+            fetch('/api/sys-users', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    sysUserList = data.data; // 保存用户列表
+                    const addRecorderSelect = document.getElementById('addRecorderId');
+                    const editRecorderSelect = document.getElementById('editRecorderId');
+
+                    // 清空现有选项
+                    addRecorderSelect.innerHTML = '<option value="">请选择记录人ID</option>';
+                    editRecorderSelect.innerHTML = '<option value="">请选择记录人ID</option>';
+
+                    // 添加用户选项
+                    sysUserList.forEach(user => {
+                        // 新增弹窗选项
+                        const addOption = document.createElement('option');
+                        addOption.value = user.userId;
+                        addOption.textContent = `${user.userId} (${user.userName})`; // 显示ID+姓名
+                        addRecorderSelect.appendChild(addOption);
+
+                        // 编辑弹窗选项
+                        const editOption = document.createElement('option');
+                        editOption.value = user.userId;
+                        editOption.textContent = `${user.userId} (${user.userName})`;
+                        editRecorderSelect.appendChild(editOption);
+                    });
+                } else {
+                    console.warn('加载记录人列表失败:', data.msg || '暂无记录人数据');
+                    // 加载失败时显示提示
+                    const addRecorderSelect = document.getElementById('addRecorderId');
+                    const editRecorderSelect = document.getElementById('editRecorderId');
+                    addRecorderSelect.innerHTML = '<option value="">暂无可用记录人</option>';
+                    editRecorderSelect.innerHTML = '<option value="">暂无可用记录人</option>';
+                }
+            })
+            .catch(error => {
+                console.error('加载记录人列表失败:', error);
+                const addRecorderSelect = document.getElementById('addRecorderId');
+                const editRecorderSelect = document.getElementById('editRecorderId');
+                addRecorderSelect.innerHTML = '<option value="">加载失败，请刷新</option>';
+                editRecorderSelect.innerHTML = '<option value="">加载失败，请刷新</option>';
+            });
+        }
+
+        // 新增：根据记录人ID填充监测人员姓名
+        function fillPersonName(type) {
+            const recorderId = document.getElementById(`${type}RecorderId`).value;
+            const personInput = document.getElementById(`${type}Person`);
+
+            if (!recorderId) {
+                personInput.value = '';
+                return;
+            }
+
+            // 查找对应的用户姓名
+            const user = sysUserList.find(item => item.userId === recorderId);
+            if (user) {
+                personInput.value = user.userName;
+            } else {
+                personInput.value = '';
+                alert('未找到该记录人对应的姓名');
+            }
+        }
+
+        // 加载物种列表
+        function loadSpeciesList() {
+            fetch('/api/species', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    const addSpeciesSelect = document.getElementById('addSpecies');
+                    const editSpeciesSelect = document.getElementById('editSpecies');
+
+                    // 清空现有选项（保留第一个）
+                    addSpeciesSelect.innerHTML = '<option value="">请选择物种</option>';
+                    editSpeciesSelect.innerHTML = '<option value="">请选择物种</option>';
+
+                    // 添加物种选项
+                    data.data.forEach(species => {
+                        const option = document.createElement('option');
+                        option.value = species.speciesId;
+                        option.textContent = species.chineseName;
+                        addSpeciesSelect.appendChild(option);
+
+                        const option2 = document.createElement('option');
+                        option2.value = species.speciesId;
+                        option2.textContent = species.chineseName;
+                        editSpeciesSelect.appendChild(option2);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('加载物种列表失败:', error);
+                // 加载失败时使用默认列表
+                const defaultSpecies = ['大熊猫', '金丝猴', '白鹭', '朱鹮', '羚牛'];
+                const addSpeciesSelect = document.getElementById('addSpecies');
+                const editSpeciesSelect = document.getElementById('editSpecies');
+
+                addSpeciesSelect.innerHTML = '<option value="">请选择物种</option>';
+                editSpeciesSelect.innerHTML = '<option value="">请选择物种</option>';
+
+                defaultSpecies.forEach(species => {
+                    const option = document.createElement('option');
+                    option.value = species;
+                    option.textContent = species;
+                    addSpeciesSelect.appendChild(option);
+
+                    const option2 = document.createElement('option');
+                    option2.value = species;
+                    option2.textContent = species;
+                    editSpeciesSelect.appendChild(option2);
+                });
+            });
+        }
+
+        // 加载设备列表（从monitor_device接口读取）
+        function loadDeviceList() {
+            fetch('/api/monitor-devices', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200 && data.data && data.data.length > 0) {
+                    const addDeviceSelect = document.getElementById('addDeviceId');
+                    const editDeviceSelect = document.getElementById('editDeviceId');
+
+                    // 清空现有选项（保留第一个）
+                    addDeviceSelect.innerHTML = '<option value="">请选择设备编号</option>';
+                    editDeviceSelect.innerHTML = '<option value="">请选择设备编号</option>';
+
+                    // 添加设备选项
+                    data.data.forEach(device => {
+                        const option = document.createElement('option');
+                        option.value = device.deviceId;
+                        option.textContent = device.deviceId;  // 显示设备编号
+                        addDeviceSelect.appendChild(option);
+
+                        const option2 = document.createElement('option');
+                        option2.value = device.deviceId;
+                        option2.textContent = device.deviceId;
+                        editDeviceSelect.appendChild(option2);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('加载设备列表失败:', error);
+                // 加载失败时显示默认选项
+                const addDeviceSelect = document.getElementById('addDeviceId');
+                const editDeviceSelect = document.getElementById('editDeviceId');
+
+                addDeviceSelect.innerHTML = '<option value="">请选择设备编号（加载失败）</option>';
+                editDeviceSelect.innerHTML = '<option value="">请选择设备编号（加载失败）</option>';
+            });
+        }
+
+        // 加载监测记录列表
+        function loadRecordList() {
+            // 显示加载状态
+            document.getElementById('recordTable').innerHTML = `
+                <tr id="loadingRow">
+                    <td colspan="8" class="loading">
+                        <i class="bi bi-hourglass-half me-2"></i>加载中，请稍候...
+                    </td>
+                </tr>
+            `;
+
+            // 构建查询参数
+            const params = new URLSearchParams();
+            params.append('page', currentPage);
+            params.append('size', pageSize);
+
+            const speciesName = document.getElementById('searchSpecies').value;
+            if (speciesName) params.append('speciesName', speciesName);
+
+            const monitorDate = document.getElementById('searchDate').value;
+            if (monitorDate) params.append('monitorDate', monitorDate);
+
+            const monitorRegion = document.getElementById('searchRegion').value;
+            if (monitorRegion) params.append('monitorRegion', monitorRegion);
+
+            const dataStatus = document.getElementById('searchStatus').value;
+            if (dataStatus) params.append('status', dataStatus);
+
+            // 调用接口加载数据
+            fetch(`/api/monitor-records?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    totalRecords = data.total;
+                    totalPages = Math.ceil(totalRecords / pageSize);
+
+                    renderRecordTable(data.data);
+                    renderPagination();
+                } else {
+                    showEmptyState('加载失败：' + data.msg);
+                }
+            })
+            .catch(error => {
+                console.error('加载监测记录失败:', error);
+                showEmptyState('加载失败，请刷新页面重试');
+            });
+        }
+
+        // 渲染记录表格
+        function renderRecordTable(records) {
+            const tableBody = document.getElementById('recordTable');
+
+            if (!records || records.length === 0) {
+                showEmptyState('暂无监测记录数据');
+                return;
+            }
+
+            // 渲染表格数据
+            let html = '';
+            records.forEach(record => {
+                // 状态徽章
+                let statusBadge = '';
+                if (record.status === '有效') {
+                    statusBadge = '<span class="badge badge-success-custom">已审核</span>';
+                } else {
+                    statusBadge = '<span class="badge badge-warning-custom">待审核</span>';
+                }
+
+                html += `
+                    <tr>
+                        <td>${record.recordId || '-'}</td>
+                        <td>${record.speciesName || '-'}</td>
+                        <td>${record.monitorDate || '-'}</td>
+                        <td>${record.monitorRegion || '-'}</td>
+                        <td>${record.count || '-'}</td>
+                        <td>${record.recorderName || '-'}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editRecord('${record.recordId}')">
+                                <i class="bi bi-pencil"></i>编辑
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteRecord('${record.recordId}')">
+                                <i class="bi bi-trash"></i>删除
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+        }
+
+        // 渲染分页控件
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            let html = '';
+
+            // 上一页
+            html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">上一页</a>
+            </li>`;
+
+            // 页码
+            const showPages = 5; // 显示的页码数量
+            let startPage = Math.max(1, currentPage - Math.floor(showPages / 2));
+            let endPage = startPage + showPages - 1;
+
+            if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = Math.max(1, endPage - showPages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+                </li>`;
+            }
+
+            // 下一页
+            html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">下一页</a>
+            </li>`;
+
+            pagination.innerHTML = html;
+        }
+
+        // 显示空状态
+        function showEmptyState(message) {
+            const tableBody = document.getElementById('recordTable');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h5>${message}</h5>
+                    </td>
+                </tr>
+            `;
+
+            // 清空分页
+            document.getElementById('pagination').innerHTML = '';
+        }
+
+        // 切换页码
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadRecordList();
+        }
+
+        // 搜索记录
+        function searchRecord() {
+            currentPage = 1; // 重置为第一页
+            loadRecordList();
+        }
+
+        // 重置搜索
+        function resetSearch() {
+            document.getElementById('searchForm').reset();
+            currentPage = 1;
+            loadRecordList();
+        }
+
+        // 退出登录
+        function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('user');
+                alert('已退出登录');
+            }
+        }
+
+        // 打开编辑弹窗并加载数据
+        function editRecord(recordId) {
+            // 加载单条记录数据
+            fetch(`/api/monitor-records/${recordId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200 && data.data) {
+                    const record = data.data;
+
+                    // 填充表单数据
+                    document.getElementById('editRecordId').value = record.recordId;
+                    document.getElementById('editSpecies').value = record.speciesId;
+                    document.getElementById('editDate').value = record.monitorTime ? record.monitorTime.slice(0, 16) : '';
+                    document.getElementById('editRegion').value = record.monitorRegion || '';
+                    document.getElementById('editMethod').value = record.monitorMethod;
+                    // 填充经纬度
+                    document.getElementById('editLongitude').value = record.longitude || '';
+                    document.getElementById('editLatitude').value = record.latitude || '';
+                    document.getElementById('editCount').value = record.count ? record.count.replace('只', '') : '';
+                    // 填充记录人ID和姓名
+                    document.getElementById('editRecorderId').value = record.recorderId;
+                    fillPersonName('edit'); // 自动填充姓名
+                    // 填充设备编号
+                    document.getElementById('editDeviceId').value = record.deviceId || '';
+                    document.getElementById('editContent').value = record.monitorContent;
+                    document.getElementById('editConclusion').value = record.analysisConclusion || '';
+                    document.getElementById('editStatus').value = record.dataStatus;
+                    document.getElementById('editRemark').value = record.remark || '';
+
+                    // 打开弹窗
+                    const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                    editModal.show();
+                } else {
+                    alert('加载记录失败：' + data.msg);
+                }
+            })
+            .catch(error => {
+                console.error('加载记录失败:', error);
+                alert('加载记录失败，请重试');
+            });
+        }
+
+        // 保存新增记录
+        function saveRecord() {
+            const addForm = document.getElementById('addForm');
+
+            // 表单验证
+            if (!addForm.checkValidity()) {
+                addForm.classList.add('was-validated');
+                return;
+            }
+
+            // 处理监测时间格式（兼容后端）
+            let monitorTime = document.getElementById('addDate').value;
+            if (monitorTime) {
+                monitorTime = monitorTime.replace('T', ' ') + ':00';
+            }
+
+            // 构建请求数据
+            const formData = {
+                speciesId: document.getElementById('addSpecies').value,
+                deviceId: document.getElementById('addDeviceId').value,
+                monitorTime: monitorTime,
+                monitorLocation: document.getElementById('addRegion').value,
+                monitorMethod: document.getElementById('addMethod').value,
+                longitude: document.getElementById('addLongitude').value,
+                latitude: document.getElementById('addLatitude').value,
+                monitorContent: document.getElementById('addContent').value,
+                analysisConclusion: document.getElementById('addConclusion').value,
+                recorderId: document.getElementById('addRecorderId').value,
+                remark: document.getElementById('addRemark').value
+            };
+
+            // 调用新增接口
+            fetch('/api/monitor-records', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('监测记录新增成功');
+                    // 关闭弹窗
+                    const addModal = bootstrap.Modal.getInstance(document.getElementById('addModal'));
+                    addModal.hide();
+                    // 重置表单
+                    addForm.reset();
+                    addForm.classList.remove('was-validated');
+                    // 刷新列表
+                    loadRecordList();
+                } else {
+                    alert('新增失败：' + data.msg);
+                }
+            })
+            .catch(error => {
+                console.error('新增记录失败:', error);
+                alert('新增失败，请重试');
+            });
+        }
+
+        // 更新记录
+        function updateRecord() {
+            const editForm = document.getElementById('editForm');
+
+            // 表单验证
+            if (!editForm.checkValidity()) {
+                editForm.classList.add('was-validated');
+                return;
+            }
+
+            const recordId = document.getElementById('editRecordId').value;
+
+            // 处理监测时间格式
+            let monitorTime = document.getElementById('editDate').value;
+            if (monitorTime) {
+                monitorTime = monitorTime.replace('T', ' ') + ':00';
+            }
+
+            // 构建请求数据
+            const formData = {
+                speciesId: document.getElementById('editSpecies').value,
+                deviceId: document.getElementById('editDeviceId').value,
+                monitorTime: monitorTime,
+                monitorLocation: document.getElementById('editRegion').value,
+                monitorMethod: document.getElementById('editMethod').value,
+                longitude: document.getElementById('editLongitude').value,
+                latitude: document.getElementById('editLatitude').value,
+                monitorContent: document.getElementById('editContent').value,
+                analysisConclusion: document.getElementById('editConclusion').value,
+                recorderId: document.getElementById('editRecorderId').value,
+                dataStatus: document.getElementById('editStatus').value,
+                remark: document.getElementById('editRemark').value
+            };
+
+            // 调用更新接口
+            fetch(`/api/monitor-records/${recordId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 200) {
+                    alert('监测记录更新成功');
+                    // 关闭弹窗
+                    const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+                    editModal.hide();
+                    // 重置表单
+                    editForm.classList.remove('was-validated');
+                    // 刷新列表
+                    loadRecordList();
+                } else {
+                    alert('更新失败：' + data.msg);
+                }
+            })
+            .catch(error => {
+                console.error('更新记录失败:', error);
+                alert('更新失败，请重试');
+            });
+        }
+
+        // 删除记录
+        function deleteRecord(recordId) {
+            if (confirm(`确定要删除记录ID: ${recordId} 吗？此操作不可恢复！`)) {
+                fetch(`/api/monitor-records/${recordId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 200) {
+                        alert('监测记录删除成功');
+                        // 刷新列表
+                        loadRecordList();
+                    } else {
+                        alert('删除失败：' + data.msg);
+                    }
+                })
+                .catch(error => {
+                    console.error('删除记录失败:', error);
+                    alert('删除失败，请重试');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
