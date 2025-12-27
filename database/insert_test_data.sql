@@ -69,27 +69,28 @@ INSERT INTO habitat_info (habitat_id, region_id, ecological_type, area, core_pro
 ('HAB020', 'REG020', '湖滨湿地', 1200.30, '洱海生态廊道湖滨区', 8);
 
 -- ===================== 4. 系统用户表（20条） =====================
-INSERT INTO sys_user (user_id, user_name, role, responsible_region) VALUES
-('US001', '张监测', '生态监测员', 'REG001'),
-('US002', '李分析', '数据分析师', 'REG002'),
-('US003', '王巡查', '生态监测员', 'REG003'),
-('US004', '赵记录', '数据录入员', 'REG004'),
-('US005', '钱主管', '监测主管', 'REG005'),
-('US006', '孙监测', '生态监测员', 'REG006'),
-('US007', '周分析', '数据分析师', 'REG007'),
-('US008', '吴巡查', '生态监测员', 'REG008'),
-('US009', '郑记录', '数据录入员', 'REG009'),
-('US010', '冯主管', '监测主管', 'REG010'),
-('US011', '陈监测', '生态监测员', 'REG011'),
-('US012', '褚分析', '数据分析师', 'REG012'),
-('US013', '卫巡查', '生态监测员', 'REG013'),
-('US014', '蒋记录', '数据录入员', 'REG014'),
-('US015', '沈主管', '监测主管', 'REG015'),
-('US016', '韩监测', '生态监测员', 'REG016'),
-('US017', '杨分析', '数据分析师', 'REG017'),
-('US018', '朱巡查', '生态监测员', 'REG018'),
-('US019', '秦记录', '数据录入员', 'REG019'),
-('US020', '尤主管', '监测主管', 'REG020');
+INSERT INTO sys_user (user_id, user_name, password_hash, role, responsible_region, login_failed, is_locked, last_login, session_expire) VALUES
+('US001', '张监测', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '生态监测员', 'REG001', 0, 0, '2024-10-01 08:00:00', DATE_ADD('2024-10-01 08:00:00', INTERVAL 30 MINUTE)),
+('US002', '李分析', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '数据分析师', 'REG002', 0, 0, '2024-10-01 08:15:00', DATE_ADD('2024-10-01 08:15:00', INTERVAL 30 MINUTE)),
+('US003', '王巡查', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '生态监测员', 'REG003', 2, 0, '2024-10-01 08:30:00', DATE_ADD('2024-10-01 08:30:00', INTERVAL 30 MINUTE)),
+('US004', '赵记录', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '数据录入员', 'REG004', 0, 0, '2024-10-01 08:45:00', DATE_ADD('2024-10-01 08:45:00', INTERVAL 30 MINUTE)),
+('US005', '钱主管', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '监测主管', 'REG005', 0, 0, '2024-10-01 09:00:00', DATE_ADD('2024-10-01 09:00:00', INTERVAL 30 MINUTE)),
+('US006', '孙监测', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '生态监测员', 'REG006', 0, 0, '2024-10-01 09:15:00', DATE_ADD('2024-10-01 09:15:00', INTERVAL 30 MINUTE)),
+('US007', '周分析', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '数据分析师', 'REG007', 0, 0, '2024-10-01 09:30:00', DATE_ADD('2024-10-01 09:30:00', INTERVAL 30 MINUTE)),
+('US008', '吴巡查', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '生态监测员', 'REG008', 0, 0, '2024-10-01 09:45:00', DATE_ADD('2024-10-01 09:45:00', INTERVAL 30 MINUTE)),
+('US009', '郑记录', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '数据录入员', 'REG009', 5, 1, '2024-09-30 18:00:00', NULL),
+('US010', '冯主管', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '监测主管', 'REG010', 0, 0, '2024-10-01 10:00:00', DATE_ADD('2024-10-01 10:00:00', INTERVAL 30 MINUTE)),
+('US011', '陈监测', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '生态监测员', 'REG011', 1, 0, '2024-10-01 10:15:00', DATE_ADD('2024-10-01 10:15:00', INTERVAL 30 MINUTE)),
+('US012', '褚分析', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '数据分析师', 'REG012', 0, 0, '2024-10-01 10:30:00', DATE_ADD('2024-10-01 10:30:00', INTERVAL 30 MINUTE)),
+('US013', '卫巡查', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '生态监测员', 'REG013', 0, 0, '2024-10-01 10:45:00', DATE_ADD('2024-10-01 10:45:00', INTERVAL 30 MINUTE)),
+('US014', '蒋记录', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '数据录入员', 'REG014', 0, 0, '2024-10-01 11:00:00', DATE_ADD('2024-10-01 11:00:00', INTERVAL 30 MINUTE)),
+('US015', '沈主管', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '监测主管', 'REG015', 0, 0, '2024-10-01 11:15:00', DATE_ADD('2024-10-01 11:15:00', INTERVAL 30 MINUTE)),
+('US016', '韩监测', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '生态监测员', 'REG016', 0, 0, '2024-10-01 11:30:00', DATE_ADD('2024-10-01 11:30:00', INTERVAL 30 MINUTE)),
+('US017', '杨分析', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '数据分析师', 'REG017', 0, 0, '2024-10-01 11:45:00', DATE_ADD('2024-10-01 11:45:00', INTERVAL 30 MINUTE)),
+('US018', '朱巡查', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '生态监测员', 'REG018', 0, 0, '2024-10-01 12:00:00', DATE_ADD('2024-10-01 12:00:00', INTERVAL 30 MINUTE)),
+('US019', '秦记录', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '数据录入员', 'REG019', 0, 0, '2024-10-01 12:15:00', DATE_ADD('2024-10-01 12:15:00', INTERVAL 30 MINUTE)),
+('US020', '尤主管', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '监测主管', 'REG020', 0, 0, '2024-10-01 12:30:00', DATE_ADD('2024-10-01 12:30:00', INTERVAL 30 MINUTE));
+
 
 
 -- ===================== 6. 栖息地-物种关联表（20条） =====================

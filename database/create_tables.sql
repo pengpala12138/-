@@ -1,10 +1,4 @@
 -- create_tables.sql
-DROP TABLE IF EXISTS monitor_record;
-DROP TABLE IF EXISTS habitat_species_relation;
-DROP TABLE IF EXISTS habitat_info;
-DROP TABLE IF EXISTS sys_user;
-DROP TABLE IF EXISTS species_info;
-
 
 -- 1. 区域信息表（支撑栖息地表关联，文档表2.2）
 CREATE TABLE IF NOT EXISTS region_info (
@@ -33,6 +27,18 @@ CREATE TABLE IF NOT EXISTS species_info (
     INDEX idx_protection_level (protection_level),
     UNIQUE INDEX idx_species_name (chinese_name, latin_name)
 ) COMMENT '物种信息表：存储物种基础信息及分类体系';
+
+CREATE TABLE IF NOT EXISTS monitor_device (
+    device_id VARCHAR(20) PRIMARY KEY,
+    device_type VARCHAR(50) NOT NULL,
+    region_id VARCHAR(20) NOT NULL,
+    install_time DATE,
+    calibration_cycle VARCHAR(8),
+    operation_status VARCHAR(10) NOT NULL CHECK (operation_status IN ('正常', '故障', '离线')),
+    comm_proto VARCHAR(50),
+    status_update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (region_id) REFERENCES region_info(region_id)
+);
 
 -- 3. 栖息地表（文档表1.3，关联区域+多物种）
 CREATE TABLE IF NOT EXISTS habitat_info (
@@ -66,15 +72,24 @@ CREATE TABLE IF NOT EXISTS habitat_species_relation (
     INDEX idx_species_habitat (species_id, habitat_id)
 ) COMMENT '栖息地-物种关联表：实现多对多关联，标记主要物种';
 
--- 6. 系统用户表（支撑记录人关联，文档表4.1简化）
+-- 6. 系统用户表
+DROP TABLE IF EXISTS monitor_record;
+DROP TABLE IF EXISTS sys_user;
 CREATE TABLE IF NOT EXISTS sys_user (
-    user_id VARCHAR(20) PRIMARY KEY COMMENT '用户ID/记录人ID（主键）',
+    user_id VARCHAR(30) NOT NULL COMMENT '用户ID/记录人ID（主键）',
     user_name VARCHAR(50) NOT NULL COMMENT '用户名（非空）',
-    role VARCHAR(20) NOT NULL COMMENT '角色（非空，如生态监测员）',
+    password_hash VARCHAR(128) NOT NULL COMMENT '密码哈希（SHA-256加密）',
+    role VARCHAR(20) NOT NULL COMMENT '角色（非空，如生态监测员/数据分析师/数据录入员/监测主管）',
     responsible_region VARCHAR(20) COMMENT '负责区域编号（关联区域表）',
-    -- 索引：按角色、负责区域检索
+    login_failed INT DEFAULT 0 COMMENT '登录失败次数',
+    is_locked TINYINT DEFAULT 0 COMMENT '是否锁定：1=是，0=否',
+    last_login DATETIME COMMENT '最后登录时间',
+    session_expire DATETIME COMMENT '会话过期时间',
+    PRIMARY KEY (user_id),
+    -- 索引
     INDEX idx_role (role),
-    INDEX idx_responsible_region (responsible_region)
+    INDEX idx_responsible_region (responsible_region),
+    INDEX idx_is_locked (is_locked)
 ) COMMENT '系统用户表：存储生态监测员、分析师等用户信息';
 
 -- 7. 监测记录表（核心业务表，文档表1.2）
@@ -106,3 +121,90 @@ CREATE TABLE IF NOT EXISTS monitor_record (
     INDEX idx_recorder_time (recorder_id, monitor_time)
 ) COMMENT '监测记录表：存储物种监测的核心业务数据';
 
+
+
+-- ===================== 视图定义（满足不同角色需求） =====================
+-- 视图1：物种保护级别统计视图（管理员/分析师)
+DROP VIEW IF EXISTS v_species_protection_stat;
+CREATE VIEW v_species_protection_stat AS
+SELECT
+    protection_level,
+    COUNT(*) AS species_count,
+    GROUP_CONCAT(chinese_name SEPARATOR ',') AS species_list,
+    GROUP_CONCAT(DISTINCT kingdom) AS kingdom_list
+FROM species_info
+GROUP BY protection_level
+ORDER BY
+    CASE protection_level
+        WHEN '国家一级' THEN 1
+        WHEN '国家二级' THEN 2
+        WHEN '无' THEN 3
+    END;
+
+-- 视图2：栖息地适宜性分析视图（生态监测员）
+DROP VIEW IF EXISTS v_habitat_suitability_analysis;
+CREATE VIEW v_habitat_suitability_analysis AS
+SELECT
+    h.habitat_id,
+    r.region_name,
+    h.ecological_type,
+    h.area,
+    h.suitability_score,
+    COUNT(hs.species_id) AS related_species_num,
+    GROUP_CONCAT(CASE WHEN hs.is_main=1 THEN s.chinese_name ELSE NULL END SEPARATOR ',') AS main_species
+FROM habitat_info h
+LEFT JOIN region_info r ON h.region_id = r.region_id
+LEFT JOIN habitat_species_relation hs ON h.habitat_id = hs.habitat_id
+LEFT JOIN species_info s ON hs.species_id = s.species_id
+GROUP BY h.habitat_id, r.region_name, h.ecological_type, h.area, h.suitability_score;
+
+-- 视图3：监测数据有效性汇总视图（数据分析师）
+DROP VIEW IF EXISTS v_monitor_data_validity;
+CREATE VIEW v_monitor_data_validity AS
+SELECT
+    r.region_name,
+    m.monitor_method,
+    COUNT(*) AS total_records,
+    SUM(CASE WHEN m.data_status = '有效' THEN 1 ELSE 0 END) AS valid_count,
+    ROUND(SUM(CASE WHEN m.data_status = '有效' THEN 1 ELSE 0 END)/COUNT(*)*100, 2) AS valid_rate,
+    AVG(TIMESTAMPDIFF(HOUR, m.monitor_time, m.verify_time)) AS avg_verify_hours
+FROM monitor_record m
+LEFT JOIN monitor_device d ON m.device_id = d.device_id
+LEFT JOIN region_info r ON d.region_id = r.region_id
+WHERE m.data_status = '有效'
+GROUP BY r.region_name, m.monitor_method;
+
+-- 视图4：设备运行状态及监测覆盖率视图（设备管理员）
+DROP VIEW IF EXISTS v_device_monitor_coverage;
+CREATE VIEW v_device_monitor_coverage AS
+SELECT
+    d.device_id,
+    d.device_type,
+    r.region_name,
+    d.operation_status,
+    COUNT(m.record_id) AS monitor_count,
+    DATE_FORMAT(d.status_update_time, '%Y-%m-%d') AS last_status_update
+FROM monitor_device d
+LEFT JOIN region_info r ON d.region_id = r.region_id
+LEFT JOIN monitor_record m ON d.device_id = m.device_id
+GROUP BY d.device_id, d.device_type, r.region_name, d.operation_status, d.status_update_time;
+
+-- 视图5：待核实数据详情视图（数据分析师）
+DROP VIEW IF EXISTS v_pending_record_detail;
+CREATE VIEW v_pending_record_detail AS
+SELECT
+    m.record_id,
+    s.chinese_name AS species_name,
+    s.protection_level,
+    d.device_type,
+    u.user_name AS recorder_name,
+    u.role,
+    m.monitor_time,
+    m.monitor_location,
+    m.monitor_content
+FROM monitor_record m
+LEFT JOIN species_info s ON m.species_id = s.species_id
+LEFT JOIN monitor_device d ON m.device_id = d.device_id
+LEFT JOIN sys_user u ON m.recorder_id = u.user_id
+WHERE m.data_status = '待核实'
+ORDER BY m.monitor_time DESC;

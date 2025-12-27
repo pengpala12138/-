@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>栖息地分析 - 生物多样性监测系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        /* ========== 全局变量（同步北林配色） ========== */
+        :root {
+            --bjfu-primary: #0A5E38;        /* 北林深绿 - 主色调 */
+            --bjfu-secondary: #147D4C;      /* 北林hover绿 - 辅助色 */
+            --bjfu-light: #E6F4EA;          /* 浅绿背景 */
+            --bjfu-accent: #FFC107;         /* 金色点缀 */
+            --bjfu-dark: #0A5E38;           /* 深绿（与主色调一致） */
+            --bjfu-text: #333333;           /* 主要文字色 */
+            --bjfu-text-light: #666666;     /* 次要文字色 */
+            --bjfu-border: #B3E0C2;         /* 边框色（基于浅绿调整） */
+            --bjfu-shadow: rgba(10, 94, 56, 0.1); /* 阴影（基于主色调） */
+            --bjfu-gradient: linear-gradient(135deg, #0A5E38 0%, #147D4C 100%); /* 渐变（主色到hover色） */
+        }
+
+        /* ========== 全局样式重置 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background-color: #F5F7F6; /* 北林浅灰背景 */
+            color: var(--bjfu-text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ========== 导航栏样式 ========== */
+        .navbar {
+            background: var(--bjfu-gradient) !important;
+            box-shadow: 0 4px 12px var(--bjfu-shadow);
+            padding: 0.8rem 0;
+            border-bottom: 3px solid var(--bjfu-accent);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1030;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, #FFFFFF 0%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            padding-left: 45px;
+        }
+
+        .navbar-brand::before {
+            content: "🌳";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.8rem;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            padding: 0.5rem 1.2rem;
+            margin: 0 0.2rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .navbar-nav .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.25);
+            color: white !important;
+        }
+
+        /* ========== 侧边栏调整 ========== */
+        .sidebar {
+            background-color: #fff;
+            border-right: 1px solid var(--bjfu-border);
+            height: 100vh;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            width: 220px;
+            padding-top: 20px;
+            box-shadow: 2px 0 8px var(--bjfu-shadow);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--bjfu-border);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h4 {
+            font-weight: 600;
+            color: var(--bjfu-primary);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 20px;
+            margin: 0;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-menu a {
+            color: var(--bjfu-text);
+            text-decoration: none;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: var(--bjfu-primary);
+            color: white;
+        }
+
+        .sidebar-menu a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* ========== 主内容区调整 ========== */
+        .main-content {
+            margin-left: 220px;
+            margin-top: 56px;
+            padding: 30px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--bjfu-dark);
+            position: relative;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: var(--bjfu-gradient);
+            border-radius: 2px;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+
+        .breadcrumb-item a {
+            color: var(--bjfu-primary);
+            text-decoration: none;
+        }
+
+        /* ========== 卡片样式 ========== */
+        .content-card {
+            background: white;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--bjfu-primary);
+            box-shadow: 0 8px 20px rgba(10, 94, 56, 0.15);
+        }
+
+        .chart-card {
+            height: 400px;
+        }
+
+        /* ========== 按钮样式 ========== */
+        .btn-park {
+            background: var(--bjfu-gradient);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(10, 94, 56, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-park::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-park:hover {
+            background: linear-gradient(135deg, #147D4C 0%, #0A5E38 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(10, 94, 56, 0.3);
+        }
+
+        .btn-park:hover::before {
+            left: 100%;
+        }
+
+        .btn-park:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(10, 94, 56, 0.2);
+        }
+
+        .btn-outline-primary {
+            border-color: var(--bjfu-primary);
+            color: var(--bjfu-primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--bjfu-primary);
+            border-color: var(--bjfu-primary);
+        }
+
+        .btn-danger-custom {
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.2);
+        }
+
+        .btn-danger-custom:hover {
+            background-color: #bb2d3b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        /* ========== 表格样式 ========== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--bjfu-gradient);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border: none;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--bjfu-border);
+            border-left: 1px solid var(--bjfu-border);
+            border-right: 1px solid var(--bjfu-border);
+        }
+
+        .data-table tr:hover {
+            background-color: var(--bjfu-light);
+            transform: scale(1.002);
+            transition: all 0.2s ease;
+        }
+
+        /* ========== 徽章样式调整 ========== */
+        .badge {
+            padding: 0.4em 0.8em;
+            font-weight: 600;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+
+        /* 适配度评分徽章 */
+        .badge-score-high { background-color: var(--bjfu-primary); color: white; }
+        .badge-score-mid { background-color: var(--bjfu-accent); color: #333; }
+        .badge-score-low { background-color: #e76f51; color: white; }
+
+        .badge-danger-custom {
+            background-color: #dc3545 !important;
+        }
+
+        .badge-warning-custom {
+            background-color: var(--bjfu-accent) !important;
+            color: #333;
+        }
+
+        .badge-success-custom {
+            background-color: var(--bjfu-primary) !important;
+        }
+
+        /* ========== 加载样式 ========== */
+        .loading { text-align: center; padding: 50px 0; color: #666; }
+
+        /* ========== 弹窗样式 ========== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal-content {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 0;
+            box-shadow: 0 10px 30px rgba(10, 94, 56, 0.2);
+        }
+
+        .modal-header {
+            background: var(--bjfu-gradient);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: none;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: skewX(-15deg);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+            z-index: 1;
+        }
+
+        .modal-body-content {
+            padding: 20px;
+        }
+
+        .species-tag {
+            display: inline-block;
+            background: var(--bjfu-light);
+            border-radius: 6px;
+            padding: 4px 8px;
+            margin: 0 4px 4px 0;
+            color: var(--bjfu-primary);
+        }
+
+        /* ========== 表单控件样式 ========== */
+        .form-control, .form-select {
+            border: 1px solid var(--bjfu-border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--bjfu-primary);
+            box-shadow: 0 0 0 0.25rem rgba(10, 94, 56, 0.15);
+            outline: none;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--bjfu-dark);
+            margin-bottom: 0.3rem;
+        }
+
+        /* ========== 页脚样式 ========== */
+        footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            background: var(--bjfu-primary);
+            color: white;
+            text-align: center;
+            font-size: 0.9rem;
+            margin-left: 220px;
+        }
+
+        /* ========== 响应式设计 ========== */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 180px;
+            }
+
+            .main-content, footer {
+                margin-left: 180px;
+            }
+
+            .navbar-brand {
+                font-size: 1.2rem;
+                padding-left: 35px;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .btn-park {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                display: none;
+            }
+
+            .main-content, footer {
+                margin-left: 0;
+                padding: 15px;
+            }
+
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        /* ========== 打印样式 ========== */
+        @media print {
+            .btn-park, .navbar, .sidebar, .modal, footer {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+                margin-top: 0;
+                padding: 0;
+            }
+
+            .content-card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏（北林主题） -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">生物多样性监测系统</a>
+            <div class="navbar-collapse">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/species">物种管理</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/monitor">监测记录</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/habitat">栖息地分析</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> 退出登录</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-tree me-2"></i>功能菜单</h4>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/"><i class="bi bi-house"></i>首页</a></li>
+            <li><a href="/species"><i class="bi bi-paw"></i>物种管理</a></li>
+            <li><a href="/monitor"><i class="bi bi-journal-text"></i>监测记录</a></li>
+            <li><a href="/habitat" class="active"><i class="bi bi-map"></i>栖息地分析</a></li>
+        </ul>
+    </div>
+
+    <!-- 主内容区 -->
+    <div class="main-content">
+        <div class="page-header">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">首页</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">栖息地分析</li>
+                </ol>
+            </nav>
+            <h2 class="page-title">栖息地分析报告</h2>
+        </div>
+
+        <!-- 筛选区（新增物种筛选 + 新增栖息地按钮） -->
+        <div class="content-card">
+            <div class="d-flex justify-content-between mb-3">
+                <h5 class="mb-0"><i class="bi bi-filter me-2"></i>数据筛选</h5>
+                <button type="button" class="btn btn-park" onclick="openHabitatModal('add')">
+                    <i class="bi bi-plus-circle me-1"></i>新增栖息地
+                </button>
+            </div>
+            <form id="searchForm" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">生态类型</label>
+                    <select class="form-select" id="searchEcoType">
+                        <option value="all" selected>全部生态类型</option>
+                        <!-- 动态加载生态类型选项 -->
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-medium">关联物种</label>
+                    <select class="form-select" id="searchSpecies">
+                        <option value="all" selected>全部物种</option>
+                        <!-- 动态加载物种选项 -->
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-medium">分析维度</label>
+                    <select class="form-select" id="searchDimension">
+                        <option value="area" selected>面积分布</option>
+                        <option value="score">适宜性评分</option>
+                        <option value="threat">受威胁程度</option>
+                        <option value="species">物种数量</option> <!-- 新增物种数量维度 -->
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-medium">&nbsp;</label>
+                    <button type="button" class="btn btn-park w-100" onclick="analysisHabitat()">
+                        <i class="bi bi-bar-chart me-1"></i>分析
+                    </button>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-medium">&nbsp;</label>
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="exportReport()">
+                        <i class="bi bi-download me-1"></i>导出报告
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 图表展示区（新增物种数量图表） -->
+        <div class="row g-4">
+            <!-- 饼图：面积/评分/威胁程度/物种数量占比 -->
+            <div class="col-md-6">
+                <div class="content-card chart-card">
+                    <h5 class="card-title fw-medium mb-3"><i class="bi bi-pie-chart me-2"></i>栖息地面积分布占比</h5>
+                    <div id="pieChart" style="width: 100%; height: 350px;"></div>
+                </div>
+            </div>
+            <!-- 柱状图：适宜性评分/物种数量 -->
+            <div class="col-md-6">
+                <div class="content-card chart-card">
+                    <h5 class="card-title fw-medium mb-3"><i class="bi bi-bar-chart me-2"></i>栖息地适宜性评分</h5>
+                    <div id="barChart" style="width: 100%; height: 350px;"></div>
+                </div>
+            </div>
+            <!-- 新增：物种数量分布图表 -->
+            <div class="col-md-12">
+                <div class="content-card chart-card">
+                    <h5 class="card-title fw-medium mb-3"><i class="bi bi-columns me-2"></i>栖息地关联物种数量分布</h5>
+                    <div id="speciesCountChart" style="width: 100%; height: 350px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 详细数据区（新增物种关联操作列 + 栖息地编辑/删除） -->
+        <div class="content-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title fw-medium mb-0"><i class="bi bi-table me-2"></i>栖息地详细数据</h5>
+                <div>
+                    <button type="button" class="btn btn-sm btn-park me-2" onclick="batchRelateSpecies()">
+                        <i class="bi bi-link me-1"></i>批量关联物种
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="refreshHabitatData()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>刷新数据
+                    </button>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>栖息地ID</th>
+                            <th>区域ID</th>
+                            <th>生态类型</th>
+                            <th>面积(公顷)</th>
+                            <th>适宜性评分</th>
+                            <th>受威胁程度</th>
+                            <th>关联物种数</th>
+                            <th>主要物种</th>
+                            <th>栖息地管理</th>
+                            <th>物种管理</th>
+                        </tr>
+                    </thead>
+                    <tbody id="habitatTableBody">
+                        <tr class="loading">
+                            <td colspan="10">加载中...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 物种关联弹窗 -->
+    <div class="modal-overlay" id="speciesRelateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalTitle">管理栖息地关联物种</h4>
+                <button class="modal-close" onclick="closeSpeciesModal()">&times;</button>
+            </div>
+            <div class="modal-body-content" id="modalBody">
+                <!-- 弹窗内容动态加载 -->
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 栖息地编辑/新增弹窗 -->
+    <div class="modal-overlay" id="habitatModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="habitatModalTitle">新增栖息地信息</h4>
+                <button class="modal-close" onclick="closeHabitatModal()">&times;</button>
+            </div>
+            <div class="modal-body-content">
+                <form id="habitatForm" class="row g-4">
+                    <input type="hidden" id="habitatId">
+
+                    <div class="col-md-6">
+                        <label class="form-label">区域ID <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="regionId" placeholder="请输入区域ID" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">生态类型 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="ecologicalType" required>
+                            <option value="">请选择生态类型</option>
+                            <option value="森林">森林</option>
+                            <option value="湿地">湿地</option>
+                            <option value="草原">草原</option>
+                            <option value="荒漠">荒漠</option>
+                            <option value="农田">农田</option>
+                            <option value="城市绿地">城市绿地</option>
+                            <option value="河流湖泊">河流湖泊</option>
+                            <option value="海岸带">海岸带</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">面积(公顷) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="area" min="0.01" step="0.01" placeholder="请输入栖息地面积" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">适宜性评分 <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="suitabilityScore" min="0" max="10" step="0.1" placeholder="0-10分" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">受威胁程度 <span class="text-danger">*</span></label>
+                        <select class="form-select" id="threatLevel" required>
+                            <option value="">请选择威胁程度</option>
+                            <option value="低威胁">低威胁</option>
+                            <option value="中度威胁">中度威胁</option>
+                            <option value="高威胁">高威胁</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">核心保护范围(公顷)</label>
+                        <input type="number" class="form-control" id="coreProtection" min="0" step="0.01" placeholder="可选填">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">栖息地描述</label>
+                        <textarea class="form-control" id="description" rows="3" placeholder="请输入栖息地详细描述（可选）"></textarea>
+                    </div>
+
+                    <div class="col-md-12 text-end">
+                        <button type="button" class="btn btn-outline-secondary me-2" onclick="closeHabitatModal()">取消</button>
+                        <button type="submit" class="btn btn-park">保存信息</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <p>© 2025 北京林业大学 - 生物多样性监测系统 | 版权所有</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量
+        let pieChartInstance, barChartInstance, speciesCountChartInstance;
+        let allHabitatData = []; // 存储从后端获取的所有栖息地数据
+        let allSpeciesData = []; // 所有物种数据
+        let currentHabitatId = ''; // 当前操作的栖息地ID
+        let currentModalType = ''; // add:新增 edit:编辑
+
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('user');
+            alert('已退出登录');
+            // 移除登录跳转逻辑，仅清除localStorage
+        }
+
+        // 页面加载初始化
+        window.onload = function() {
+            // 初始化图表实例（空数据）
+            initEmptyCharts();
+            // 加载生态类型下拉框
+            loadEcoTypes();
+            // 加载物种下拉框
+            loadSpeciesList();
+            // 加载栖息地数据
+            loadHabitatData('all', 'all');
+            // 绑定栖息地表单提交事件
+            document.getElementById('habitatForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveHabitatInfo();
+            });
+        }
+
+        // 初始化空图表（避免加载时空白）
+        function initEmptyCharts() {
+            // 饼图
+            pieChartInstance = echarts.init(document.getElementById('pieChart'));
+            pieChartInstance.setOption({
+                title: { show: false },
+                tooltip: { trigger: 'item' },
+                legend: { orient: 'vertical', left: 'left' },
+                series: [{ name: '面积', type: 'pie', radius: ['40%', '70%'], data: [] }]
+            });
+
+            // 柱状图
+            barChartInstance = echarts.init(document.getElementById('barChart'));
+            barChartInstance.setOption({
+                title: { show: false },
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['适宜性评分'] },
+                xAxis: { type: 'category', data: [] },
+                yAxis: { type: 'value', min: 0, max: 10 },
+                series: [{ name: '适宜性评分', type: 'bar', data: [] }]
+            });
+
+            // 物种数量图表
+            speciesCountChartInstance = echarts.init(document.getElementById('speciesCountChart'));
+            speciesCountChartInstance.setOption({
+                title: { show: false },
+                tooltip: { trigger: 'axis' },
+                legend: { data: ['总物种数', '主要物种数'] },
+                xAxis: { type: 'category', data: [] },
+                yAxis: { type: 'value', min: 0 },
+                series: [
+                    { name: '总物种数', type: 'bar', data: [] },
+                    { name: '主要物种数', type: 'bar', data: [] }
+                ]
+            });
+
+            // 自适应窗口
+            window.addEventListener('resize', () => {
+                pieChartInstance.resize();
+                barChartInstance.resize();
+                speciesCountChartInstance.resize();
+            });
+        }
+
+        // 加载生态类型下拉框
+        function loadEcoTypes() {
+            fetch('/api/habitat/types')
+                .then(res => res.json())
+                .then(response => {
+                    if (response.code === 200 && response.data.length > 0) {
+                        const select = document.getElementById('searchEcoType');
+                        response.data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.type;
+                            option.textContent = item.type;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(err => console.error('加载生态类型失败：', err));
+        }
+
+        // 加载物种下拉框
+        function loadSpeciesList() {
+            fetch('/api/species?page=1&size=1000')
+                .then(res => res.json())
+                .then(response => {
+                    if (response.code === 200 && response.data.length > 0) {
+                        allSpeciesData = response.data;
+                        const select = document.getElementById('searchSpecies');
+                        response.data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item.speciesId;
+                            option.textContent = item.chineseName;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(err => console.error('加载物种列表失败：', err));
+        }
+
+        // 加载栖息地数据（新增物种筛选参数）
+        function loadHabitatData(ecoType, speciesId) {
+            // 拼接请求参数
+            const params = new URLSearchParams({
+                type: ecoType,
+                speciesId: speciesId !== 'all' ? speciesId : ''
+            });
+
+            fetch(`/api/habitat/list?${params}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('接口请求失败');
+                    return res.json();
+                })
+                .then(response => {
+                    if (response.code === 200) {
+                        allHabitatData = response.data;
+                        // 补充加载每个栖息地的物种关联数据
+                        loadHabitatSpeciesRelation().then(() => {
+                            // 渲染表格
+                            renderHabitatTable(allHabitatData);
+                            // 初始化图表
+                            initCharts(allHabitatData);
+                        });
+                    } else {
+                        alert('数据查询失败：' + response.msg);
+                        renderEmptyTable();
+                    }
+                })
+                .catch(err => {
+                    console.error('请求异常：', err);
+                    alert('网络异常，无法获取数据：' + err.message);
+                    renderEmptyTable();
+                });
+        }
+
+        // 刷新栖息地数据
+        function refreshHabitatData() {
+            const selectedType = document.getElementById('searchEcoType').value;
+            const selectedSpecies = document.getElementById('searchSpecies').value;
+            loadHabitatData(selectedType, selectedSpecies);
+            alert('数据已刷新！');
+        }
+
+        // 加载栖息地-物种关联数据
+        function loadHabitatSpeciesRelation() {
+            const promises = allHabitatData.map(habitat => {
+                return fetch(`/api/habitat/${habitat.habitatId}/species`)
+                    .then(res => res.json())
+                    .then(response => {
+                        if (response.code === 200) {
+                            habitat.relatedSpecies = response.data;
+                            habitat.speciesCount = response.totalSpeciesCount || 0;
+                            habitat.mainSpeciesCount = response.mainSpeciesCount || 0;
+                            // 获取主要物种名称
+                            habitat.mainSpeciesNames = response.data
+                                .filter(s => s.isMain === 1)
+                                .map(s => s.speciesName)
+                                .slice(0, 3)
+                                .join('、');
+                            if (response.data.length > 3 && habitat.mainSpeciesNames) {
+                                habitat.mainSpeciesNames += '...';
+                            }
+                        } else {
+                            habitat.relatedSpecies = [];
+                            habitat.speciesCount = 0;
+                            habitat.mainSpeciesCount = 0;
+                            habitat.mainSpeciesNames = '无';
+                        }
+                        return habitat;
+                    })
+                    .catch(err => {
+                        console.error(`加载栖息地${habitat.habitatId}物种关联失败：`, err);
+                        habitat.relatedSpecies = [];
+                        habitat.speciesCount = 0;
+                        habitat.mainSpeciesCount = 0;
+                        habitat.mainSpeciesNames = '无';
+                        return habitat;
+                    });
+            });
+            return Promise.all(promises);
+        }
+
+        // 渲染空表格
+        function renderEmptyTable() {
+            const tableBody = document.getElementById('habitatTableBody');
+            tableBody.innerHTML = '<tr><td colspan="10" class="text-center py-3">暂无数据</td></tr>';
+        }
+
+        // 渲染栖息地表格（新增栖息地管理列）
+        function renderHabitatTable(data) {
+            const tableBody = document.getElementById('habitatTableBody');
+            tableBody.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                renderEmptyTable();
+                return;
+            }
+
+            data.forEach(item => {
+                // 适配度评分徽章
+                let scoreBadge;
+                if (item.suitabilityScore >= 9) {
+                    scoreBadge = `<span class="badge badge-score-high">${item.suitabilityScore}</span>`;
+                } else if (item.suitabilityScore >= 7) {
+                    scoreBadge = `<span class="badge badge-score-mid">${item.suitabilityScore}</span>`;
+                } else {
+                    scoreBadge = `<span class="badge badge-score-low">${item.suitabilityScore}</span>`;
+                }
+
+                // 威胁程度徽章
+                let threatBadge;
+                if (item.threatLevel === '低威胁') {
+                    threatBadge = '<span class="badge badge-success-custom">低威胁</span>';
+                } else if (item.threatLevel === '中度威胁') {
+                    threatBadge = '<span class="badge badge-warning-custom">中度威胁</span>';
+                } else {
+                    threatBadge = '<span class="badge badge-danger-custom">高威胁</span>';
+                }
+
+                // 物种数量徽章
+                let speciesCountBadge = `<span class="badge badge-success-custom">${item.speciesCount || 0}</span>`;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.habitatId || '-'}</td>
+                    <td>${item.regionId || '-'}</td>
+                    <td>${item.ecologicalType || '-'}</td>
+                    <td>${item.area.toFixed(2) || '-'}</td>
+                    <td>${scoreBadge}</td>
+                    <td>${threatBadge}</td>
+                    <td>${speciesCountBadge}</td>
+                    <td>${item.mainSpeciesNames || '无'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="openHabitatModal('edit', '${item.habitatId}')">
+                            <i class="bi bi-pencil-square me-1"></i>编辑
+                        </button>
+                        <button class="btn btn-sm btn-danger-custom" onclick="deleteHabitat('${item.habitatId}')">
+                            <i class="bi bi-trash me-1"></i>删除
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-park me-2" onclick="openSpeciesModal('${item.habitatId}')">
+                            <i class="bi bi-link me-1"></i>关联物种
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewSpeciesDetail('${item.habitatId}')">
+                            <i class="bi bi-eye me-1"></i>查看详情
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // 初始化图表（新增物种数量维度）
+        function initCharts(data) {
+            if (!data || data.length === 0) return;
+
+            // 获取分析维度
+            const selectedDimension = document.getElementById('searchDimension').value;
+
+            // ========== 饼图：根据维度展示不同数据 ==========
+            let pieTitle = '栖息地面积分布占比';
+            let pieData = [];
+
+            if (selectedDimension === 'area') {
+                // 面积分布
+                pieTitle = '栖息地面积分布占比';
+                const sortedAreaData = [...data].sort((a, b) => b.area - a.area).slice(0, 8);
+                pieData = sortedAreaData.map(item => ({
+                    value: item.area,
+                    name: item.ecologicalType.length > 6 ? item.ecologicalType.substring(0, 6) + '...' : item.ecologicalType
+                }));
+            } else if (selectedDimension === 'score') {
+                // 适宜性评分占比
+                pieTitle = '栖息地适宜性评分占比';
+                const sortedScoreData = [...data].sort((a, b) => b.suitabilityScore - a.suitabilityScore).slice(0, 8);
+                pieData = sortedScoreData.map(item => ({
+                    value: item.suitabilityScore,
+                    name: item.ecologicalType.length > 6 ? item.ecologicalType.substring(0, 6) + '...' : item.ecologicalType
+                }));
+            } else if (selectedDimension === 'threat') {
+                // 受威胁程度占比
+                pieTitle = '栖息地受威胁程度面积占比';
+                const threatMap = { '低威胁': [], '中度威胁': [], '高威胁': [] };
+                data.forEach(item => {
+                    threatMap[item.threatLevel].push(item);
+                });
+                pieData = [
+                    { name: '低威胁', value: threatMap['低威胁'].reduce((sum, item) => sum + item.area, 0) },
+                    { name: '中度威胁', value: threatMap['中度威胁'].reduce((sum, item) => sum + item.area, 0) },
+                    { name: '高威胁', value: threatMap['高威胁'].reduce((sum, item) => sum + item.area, 0) }
+                ];
+            } else if (selectedDimension === 'species') {
+                // 物种数量占比
+                pieTitle = '栖息地关联物种数量占比';
+                const sortedSpeciesData = [...data].sort((a, b) => b.speciesCount - a.speciesCount).slice(0, 8);
+                pieData = sortedSpeciesData.map(item => ({
+                    value: item.speciesCount || 0,
+                    name: item.ecologicalType.length > 6 ? item.ecologicalType.substring(0, 6) + '...' : item.ecologicalType
+                }));
+            }
+
+            pieChartInstance.setOption({
+                title: { text: pieTitle },
+                tooltip: {
+                    formatter: selectedDimension === 'area' ? '{b}<br/>面积：{c} 公顷<br/>占比：{d}%' :
+                               selectedDimension === 'score' ? '{b}<br/>适宜性评分：{c}分<br/>占比：{d}%' :
+                               selectedDimension === 'threat' ? '{b}<br/>面积：{c} 公顷<br/>占比：{d}%' :
+                               '{b}<br/>物种数量：{c}个<br/>占比：{d}%'
+                },
+                series: [{
+                    name: selectedDimension === 'area' ? '面积' :
+                           selectedDimension === 'score' ? '适宜性评分' :
+                           selectedDimension === 'threat' ? '威胁等级面积' : '物种数量',
+                    data: pieData,
+                    itemStyle: {
+                        color: function(params) {
+                            // 自定义饼图颜色（北林色系）
+                            const colorList = [
+                                '#0A5E38', '#147D4C', '#1AA85F',
+                                '#FFC107', '#FFD700', '#E6F4EA'
+                            ];
+                            return colorList[params.dataIndex % colorList.length];
+                        }
+                    }
+                }]
+            });
+
+            // ========== 柱状图：根据维度展示不同数据 ==========
+            let barTitle = '栖息地适宜性评分';
+            let barXData = [];
+            let barYData = [];
+            let barLegend = ['适宜性评分'];
+            let barYFormatter = '{value}分';
+
+            if (selectedDimension === 'area') {
+                barTitle = '栖息地适宜性评分';
+                const sortedScoreData = [...data].sort((a, b) => b.suitabilityScore - a.suitabilityScore).slice(0, 8);
+                barXData = sortedScoreData.map(item => item.ecologicalType.length > 6 ? item.ecologicalType.substring(0, 6) + '...' : item.ecologicalType);
+                barYData = sortedScoreData.map(item => item.suitabilityScore);
+            } else if (selectedDimension === 'score') {
+                barTitle = '栖息地面积分布';
+                const sortedAreaData = [...data].sort((a, b) => b.area - a.area).slice(0, 8);
+                barXData = sortedAreaData.map(item => item.ecologicalType.length > 6 ? item.ecologicalType.substring(0, 6) + '...' : item.ecologicalType);
+                barYData = sortedAreaData.map(item => item.area);
+                barLegend = ['面积（公顷）'];
+                barYFormatter = '{value} 公顷';
+            } else if (selectedDimension === 'threat') {
+                barTitle = '各威胁等级平均适宜性评分';
+                const threatMap = { '低威胁': [], '中度威胁': [], '高威胁': [] };
+                data.forEach(item => {
+                    threatMap[item.threatLevel].push(item);
+                });
+                barXData = ['低威胁', '中度威胁', '高威胁'];
+                barYData = [
+                    threatMap['低威胁'].length > 0 ? (threatMap['低威胁'].reduce((sum, item) => sum + item.suitabilityScore, 0) / threatMap['低威胁'].length) : 0,
+                    threatMap['中度威胁'].length > 0 ? (threatMap['中度威胁'].reduce((sum, item) => sum + item.suitabilityScore, 0) / threatMap['中度威胁'].length) : 0,
+                    threatMap['高威胁'].length > 0 ? (threatMap['高威胁'].reduce((sum, item) => sum + item.suitabilityScore, 0) / threatMap['高威胁'].length) : 0
+                ];
+                barLegend = ['平均适宜性评分'];
+            } else if (selectedDimension === 'species') {
+                barTitle = '栖息地关联物种数量';
+                const sortedSpeciesData = [...data].sort((a, b) => b.speciesCount - a.speciesCount).slice(0, 8);
+                barXData = sortedSpeciesData.map(item => item.ecologicalType.length > 6 ? item.ecologicalType.substring(0, 6) + '...' : item.ecologicalType);
+                barYData = sortedSpeciesData.map(item => item.speciesCount || 0);
+                barLegend = ['物种数量'];
+                barYFormatter = '{value}个';
+            }
+
+            barChartInstance.setOption({
+                title: { text: barTitle },
+                tooltip: { formatter: '{b}<br/>' + barLegend[0] + '：{c}' + barYFormatter.replace('{value}', '') },
+                legend: { data: barLegend },
+                xAxis: {
+                    data: barXData,
+                    axisLabel: { rotate: 30 }
+                },
+                yAxis: { axisLabel: { formatter: barYFormatter } },
+                series: [{
+                    name: barLegend[0],
+                    data: barYData,
+                    itemStyle: {
+                        color: function(params) {
+                            // 自定义柱状图颜色（北林色系）
+                            const colorList = ['#0A5E38', '#147D4C', '#1AA85F'];
+                            return colorList[params.dataIndex % colorList.length];
+                        }
+                    }
+                }]
+            });
+
+            // ========== 物种数量分布图表 ==========
+            const speciesChartData = [...data].sort((a, b) => b.speciesCount - a.speciesCount).slice(0, 10);
+            const speciesXData = speciesChartData.map(item => item.habitatId);
+            const totalSpeciesData = speciesChartData.map(item => item.speciesCount || 0);
+            const mainSpeciesData = speciesChartData.map(item => item.mainSpeciesCount || 0);
+
+            speciesCountChartInstance.setOption({
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        let res = params[0].name + '<br/>';
+                        params.forEach(param => {
+                            res += param.seriesName + '：' + param.value + '个<br/>';
+                        });
+                        return res;
+                    }
+                },
+                xAxis: {
+                    data: speciesXData,
+                    axisLabel: { rotate: 45 }
+                },
+                yAxis: { axisLabel: { formatter: '{value}个' } },
+                series: [
+                    {
+                        name: '总物种数',
+                        data: totalSpeciesData,
+                        itemStyle: { color: '#0A5E38' }
+                    },
+                    {
+                        name: '主要物种数',
+                        data: mainSpeciesData,
+                        itemStyle: { color: '#FFC107' }
+                    }
+                ]
+            });
+        }
+
+        // 分析栖息地（新增物种筛选）
+        function analysisHabitat() {
+            const selectedType = document.getElementById('searchEcoType').value;
+            const selectedSpecies = document.getElementById('searchSpecies').value;
+            const selectedDimension = document.getElementById('searchDimension').value;
+
+            // 重新加载筛选后的数据
+            loadHabitatData(selectedType, selectedSpecies)
+                .then(() => {
+                    let filteredData = allHabitatData;
+                    if (selectedType !== 'all') {
+                        filteredData = filteredData.filter(item => item.ecologicalType === selectedType);
+                    }
+
+                    // 重新初始化图表
+                    initCharts(filteredData);
+
+                    alert(`已筛选【${selectedType === 'all' ? '全部生态类型' : selectedType}】${selectedSpecies === 'all' ? '' : ' + 物种：' + allSpeciesData.find(s => s.speciesId === selectedSpecies)?.chineseName}，按【${
+                        selectedDimension === 'area' ? '面积分布' :
+                        selectedDimension === 'score' ? '适宜性评分' :
+                        selectedDimension === 'threat' ? '受威胁程度' : '物种数量'
+                    }】维度分析完成！`);
+                });
+        }
+
+        // ========== 栖息地管理核心功能 ==========
+        // 打开栖息地编辑/新增弹窗
+        function openHabitatModal(type, habitatId) {
+            currentModalType = type;
+            const modal = document.getElementById('habitatModal');
+            const modalTitle = document.getElementById('habitatModalTitle');
+
+            // 重置表单
+            document.getElementById('habitatForm').reset();
+            document.getElementById('habitatId').value = '';
+
+            if (type === 'add') {
+                modalTitle.textContent = '新增栖息地信息';
+            } else if (type === 'edit') {
+                modalTitle.textContent = '编辑栖息地信息';
+                // 填充表单数据
+                const habitat = allHabitatData.find(item => item.habitatId === habitatId);
+                if (habitat) {
+                    document.getElementById('habitatId').value = habitat.habitatId;
+                    document.getElementById('regionId').value = habitat.regionId || '';
+                    document.getElementById('ecologicalType').value = habitat.ecologicalType || '';
+                    document.getElementById('area').value = habitat.area || '';
+                    document.getElementById('suitabilityScore').value = habitat.suitabilityScore || '';
+                    document.getElementById('threatLevel').value = habitat.threatLevel || '';
+                    document.getElementById('coreProtection').value = habitat.coreProtection || '';
+                    document.getElementById('description').value = habitat.description || '';
+                }
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        // 关闭栖息地弹窗
+        function closeHabitatModal() {
+            const modal = document.getElementById('habitatModal');
+            modal.style.display = 'none';
+            currentModalType = '';
+        }
+
+        // 保存栖息地信息（新增/编辑）
+        function saveHabitatInfo() {
+            const habitatId = document.getElementById('habitatId').value;
+            const habitatData = {
+                regionId: document.getElementById('regionId').value,
+                ecologicalType: document.getElementById('ecologicalType').value,
+                area: parseFloat(document.getElementById('area').value),
+                suitabilityScore: parseFloat(document.getElementById('suitabilityScore').value),
+                threatLevel: document.getElementById('threatLevel').value,
+                coreProtection: document.getElementById('coreProtection').value ? parseFloat(document.getElementById('coreProtection').value) : 0,
+                description: document.getElementById('description').value
+            };
+
+            // 构建请求参数
+            let url = '/api/habitat';
+            let method = 'POST';
+
+            if (currentModalType === 'edit' && habitatId) {
+                url = `/api/habitat/${habitatId}`;
+                method = 'PUT';
+                habitatData.habitatId = habitatId;
+            }
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(habitatData)
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.code === 200) {
+                    alert(currentModalType === 'add' ? '栖息地新增成功！' : '栖息地编辑成功！');
+                    closeHabitatModal();
+                    // 重新加载数据
+                    refreshHabitatData();
+                } else {
+                    alert('操作失败：' + response.msg);
+                }
+            })
+            .catch(err => {
+                console.error('保存栖息地信息失败：', err);
+                alert('操作失败：' + err.message);
+            });
+        }
+
+        // 删除栖息地
+        function deleteHabitat(habitatId) {
+            if (!confirm(`确定要删除栖息地【${habitatId}】吗？此操作将同时删除该栖息地的所有物种关联数据，且无法恢复！`)) {
+                return;
+            }
+
+            fetch(`/api/habitat/${habitatId}`, {
+                method: 'DELETE'
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.code === 200) {
+                    alert('栖息地删除成功！');
+                    // 重新加载数据
+                    refreshHabitatData();
+                } else {
+                    alert('删除失败：' + response.msg);
+                }
+            })
+            .catch(err => {
+                console.error('删除栖息地失败：', err);
+                alert('删除失败：' + err.message);
+            });
+        }
+
+        // ========== 物种关联相关功能 ==========
+        // 打开物种关联弹窗
+        function openSpeciesModal(habitatId) {
+            currentHabitatId = habitatId;
+            const modal = document.getElementById('speciesRelateModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = `管理栖息地【${habitatId}】关联物种`;
+            modalBody.innerHTML = '<div class="loading">加载物种关联数据中...</div>';
+
+            // 加载该栖息地的物种关联数据
+            fetch(`/api/habitat/${habitatId}/species`)
+                .then(res => res.json())
+                .then(response => {
+                    if (response.code === 200) {
+                        const relatedSpecies = response.data;
+
+                        // 构建弹窗内容
+                        let html = `
+                            <div class="row mb-4">
+                                <div class="col-md-8">
+                                    <select class="form-select" id="addSpeciesSelect">
+                                        <option value="">选择要关联的物种</option>
+                                        ${allSpeciesData.map(species => {
+                                            const isRelated = relatedSpecies.some(r => r.speciesId === species.speciesId);
+                                            return isRelated ? '' : `<option value="${species.speciesId}">${species.chineseName} (${species.protectionLevel})</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button class="btn btn-park w-100" onclick="addSpeciesRelation()">
+                                        <i class="bi bi-plus me-1"></i>添加关联
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6>已关联物种（共${relatedSpecies.length}个）</h6>
+                                <div class="table-responsive">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>物种ID</th>
+                                                <th>物种名称</th>
+                                                <th>保护级别</th>
+                                                <th>是否主要物种</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${relatedSpecies.length > 0 ? relatedSpecies.map(species => `
+                                                <tr>
+                                                    <td>${species.speciesId}</td>
+                                                    <td>${species.speciesName}</td>
+                                                    <td>${species.protectionLevel}</td>
+                                                    <td>
+                                                        <button class="btn btn-sm ${species.isMain === 1 ? 'btn-success' : 'btn-outline-secondary'}"
+                                                                onclick="toggleMainSpecies('${species.speciesId}', ${species.isMain})">
+                                                            ${species.isMain === 1 ? '是' : '否'}
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-danger" onclick="deleteSpeciesRelation('${species.speciesId}')">
+                                                            <i class="bi bi-trash me-1"></i>解除关联
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('') : `
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-3">暂无关联物种</td>
+                                                </tr>
+                                            `}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        `;
+                        modalBody.innerHTML = html;
+                    } else {
+                        modalBody.innerHTML = `<div class="text-danger">加载失败：${response.msg}</div>`;
+                    }
+                })
+                .catch(err => {
+                    console.error('加载物种关联数据失败：', err);
+                    modalBody.innerHTML = `<div class="text-danger">加载失败：${err.message}</div>`;
+                });
+
+            modal.style.display = 'flex';
+        }
+
+        // 关闭物种关联弹窗
+        function closeSpeciesModal() {
+            const modal = document.getElementById('speciesRelateModal');
+            modal.style.display = 'none';
+            currentHabitatId = '';
+        }
+
+        // 添加物种关联
+        function addSpeciesRelation() {
+            const speciesId = document.getElementById('addSpeciesSelect').value;
+            if (!speciesId) {
+                alert('请选择要关联的物种！');
+                return;
+            }
+
+            fetch('/api/habitat/species/relation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    habitatId: currentHabitatId,
+                    speciesId: speciesId,
+                    isMain: 0
+                })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.code === 200) {
+                    alert('物种关联成功！');
+                    // 重新加载弹窗数据
+                    openSpeciesModal(currentHabitatId);
+                    // 重新加载页面数据
+                    refreshHabitatData();
+                } else {
+                    alert('关联失败：' + response.msg);
+                }
+            })
+            .catch(err => {
+                console.error('添加物种关联失败：', err);
+                alert('关联失败：' + err.message);
+            });
+        }
+
+        // 切换主要物种状态
+        function toggleMainSpecies(speciesId, isMain) {
+            const newIsMain = isMain === 1 ? 0 : 1;
+
+            fetch('/api/habitat/species/relation', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    habitatId: currentHabitatId,
+                    speciesId: speciesId,
+                    isMain: newIsMain
+                })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.code === 200) {
+                    alert(`已${newIsMain === 1 ? '标记为' : '取消'}主要物种！`);
+                    // 重新加载弹窗数据
+                    openSpeciesModal(currentHabitatId);
+                    // 重新加载页面数据
+                    refreshHabitatData();
+                } else {
+                    alert('操作失败：' + response.msg);
+                }
+            })
+            .catch(err => {
+                console.error('切换主要物种失败：', err);
+                alert('操作失败：' + err.message);
+            });
+        }
+
+        // 删除物种关联
+        function deleteSpeciesRelation(speciesId) {
+            if (!confirm('确定要解除该物种的关联吗？')) {
+                return;
+            }
+
+            fetch('/api/habitat/species/relation', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    habitatId: currentHabitatId,
+                    speciesId: speciesId
+                })
+            })
+            .then(res => res.json())
+            .then(response => {
+                if (response.code === 200) {
+                    alert('关联已解除！');
+                    // 重新加载弹窗数据
+                    openSpeciesModal(currentHabitatId);
+                    // 重新加载页面数据
+                    refreshHabitatData();
+                } else {
+                    alert('解除失败：' + response.msg);
+                }
+            })
+            .catch(err => {
+                console.error('解除物种关联失败：', err);
+                alert('解除失败：' + err.message);
+            });
+        }
+
+        // 查看物种详情
+        function viewSpeciesDetail(habitatId) {
+            const habitat = allHabitatData.find(h => h.habitatId === habitatId);
+            if (!habitat || !habitat.relatedSpecies || habitat.relatedSpecies.length === 0) {
+                alert('该栖息地暂无关联物种！');
+                return;
+            }
+
+            // 构建详情弹窗
+            const modal = document.getElementById('speciesRelateModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = `栖息地【${habitatId}】关联物种详情`;
+
+            // 按主要物种分组
+            const mainSpecies = habitat.relatedSpecies.filter(s => s.isMain === 1);
+            const otherSpecies = habitat.relatedSpecies.filter(s => s.isMain === 0);
+
+            let html = `
+                <div class="mb-4">
+                    <h6>基本信息</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <td width="150px">栖息地ID</td>
+                            <td>${habitat.habitatId}</td>
+                            <td width="150px">生态类型</td>
+                            <td>${habitat.ecologicalType}</td>
+                        </tr>
+                        <tr>
+                            <td>区域ID</td>
+                            <td>${habitat.regionId}</td>
+                            <td>适宜性评分</td>
+                            <td>${habitat.suitabilityScore}</td>
+                        </tr>
+                        <tr>
+                            <td>总面积</td>
+                            <td>${habitat.area.toFixed(2)} 公顷</td>
+                            <td>受威胁程度</td>
+                            <td>${habitat.threatLevel}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div>
+                    <h6>主要物种（${mainSpecies.length}个）</h6>
+                    <div class="mb-3">
+                        ${mainSpecies.length > 0 ? mainSpecies.map(s => `
+                            <div class="species-tag">
+                                ${s.speciesName} (${s.protectionLevel})
+                            </div>
+                        `).join('') : '无'}
+                    </div>
+
+                    <h6>其他关联物种（${otherSpecies.length}个）</h6>
+                    <div>
+                        ${otherSpecies.length > 0 ? otherSpecies.map(s => `
+                            <div class="species-tag">
+                                ${s.speciesName} (${s.protectionLevel})
+                            </div>
+                        `).join('') : '无'}
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button class="btn btn-park" onclick="openSpeciesModal('${habitatId}')">
+                        <i class="bi bi-pencil me-1"></i>编辑关联物种
+                    </button>
+                </div>
+            `;
+
+            modalBody.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+
+        // 批量关联物种（预留功能）
+        function batchRelateSpecies() {
+            alert('批量关联物种功能开发中，敬请期待！');
+        }
+
+        // 导出报告（新增物种关联数据）
+        function exportReport() {
+            if (allHabitatData.length === 0) {
+                alert('暂无数据可导出！');
+                return;
+            }
+
+            // 构建CSV内容（新增物种相关列）
+            const csvHeader = '栖息地ID,区域ID,生态类型,面积(公顷),核心保护范围,适宜性评分,受威胁程度,关联物种数,主要物种数,主要物种名称\n';
+            const csvBody = allHabitatData.map(item => {
+                return `${item.habitatId},${item.regionId},${item.ecologicalType},${item.area.toFixed(2)},${item.coreProtection || ''},${item.suitabilityScore},${item.threatLevel},${item.speciesCount || 0},${item.mainSpeciesCount || 0},"${item.mainSpeciesNames || '无'}"`;
+            }).join('\n');
+            const csvContent = encodeURI('data:text/csv;charset=utf-8,\uFEFF' + csvHeader + csvBody);
+
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.href = csvContent;
+            link.download = '栖息地分析报告_' + new Date().toLocaleDateString().replace(/\//g, '-') + '.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            alert('栖息地分析报告（含物种关联数据）已成功导出为CSV文件！');
+        }
+
+        // 点击弹窗外部关闭
+        document.getElementById('speciesRelateModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSpeciesModal();
+            }
+        });
+
+        document.getElementById('habitatModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHabitatModal();
+            }
+        });
+    </script>
+</body>
+</html>
