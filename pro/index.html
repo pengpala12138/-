@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北京林业大学 - 智慧林草系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bfu-green-dark: #0A5E38;
+            --bfu-green-light: #E6F4EA;
+            --bfu-green-hover: #147D4C;
+            --bfu-gray: #F5F7F6;
+            --bfu-text: #333333;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            color: var(--bfu-text);
+            background-color: var(--bfu-gray);
+        }
+        .page-header {
+            background: linear-gradient(rgba(10, 94, 56, 0.92), rgba(10, 94, 56, 0.97)),
+                        url('https://picsum.photos/id/225/1920/500') center/cover no-repeat;
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+            position: relative;
+            color: white;
+        }
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23F5F7F6' fill-opacity='1' d='M0,192L48,181.3C96,171,192,149,288,149.3C384,149,480,171,576,176C672,181,768,171,864,149.3C960,128,1056,96,1152,90.7C1248,85,1344,107,1392,117.3L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: cover;
+        }
+        .bfu-logo {
+            width: 80px;
+            height: 80px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+        .bfu-logo i {
+            font-size: 3rem;
+            color: var(--bfu-green-dark);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            background-color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-hover::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23B3E0C2' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3C/svg%3E") no-repeat;
+            opacity: 0.6;
+            z-index: 0;
+        }
+        .card-hover:hover {
+            transform: translateY(-8px);
+            border-color: var(--bfu-green-dark);
+            box-shadow: 0 8px 20px rgba(10, 94, 56, 0.15);
+        }
+        .card-body {
+            position: relative;
+            z-index: 1;
+        }
+        .card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.2rem;
+            color: var(--bfu-green-dark);
+            background: linear-gradient(135deg, var(--bfu-green-light), white);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 2px 8px rgba(10, 94, 56, 0.1);
+        }
+        .card-title {
+            color: var(--bfu-green-dark);
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+        .page-footer {
+            margin-top: 5rem;
+            padding: 2rem 0;
+            background-color: var(--bfu-green-dark);
+            color: white;
+        }
+        .footer-info {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .footer-divider {
+            width: 80px;
+            height: 3px;
+            background-color: white;
+            margin: 1rem auto;
+            border-radius: 3px;
+        }
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+        }
+        .card-link:hover {
+            color: var(--bfu-green-hover);
+        }
+        .user-info {
+            text-align: right;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        .logout-btn {
+            background-color: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .logout-btn:hover {
+            background-color: white;
+            color: var(--bfu-green-dark);
+        }
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="bfu-logo">
+                        <<i class="fa fa-tree" aria-hidden="true"></i>
+                    </div>
+                    <h1 class="display-4 fw-bold">北京林业大学智慧林草系统</h1>
+                    <p class="lead mt-2">数据库系统课程设计 | 国家公园生态保护与智能管理平台</p>
+                </div>
+                <div class="col-md-6 user-info">
+                    <p id="userRealName">欢迎登录</p>
+                    <button class="logout-btn" id="logoutBtn">
+                        <<i class="fa fa-sign-out" aria-hidden="true"></i> 退出登录
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="row g-5">
+            <!-- 1. 生物多样性监测模块（data-module标记权限） -->
+            <div class="col-md-6 col-lg-4" data-module="生物多样性监测">
+                <a href="http://10.152.230.96:5000" class="card-link" target="_self">
+                    <div class="card h-100 p-5 text-center card-hover">
+                        <div class="card-body">
+                            <div class="card-icon">
+                                <<i class="fa fa-paw" aria-hidden="true"></i>
+                            </div>
+                            <h5 class="card-title">生物多样性监测</h5>
+                            <p class="card-text text-muted">物种信息管理、栖息地监测、数据审核分析<br>—— 守护生态核心资源</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 2. 生态环境监测模块 -->
+            <div class="col-md-6 col-lg-4" data-module="生态环境监测">
+                <a href="http://10.152.230.97:3001" class="card-link" target="_self">
+                    <div class="card h-100 p-5 text-center card-hover">
+                        <div class="card-body">
+                            <div class="card-icon">
+                                <<i class="fa fa-leaf" aria-hidden="true"></i>
+                            </div>
+                            <h5 class="card-title">生态环境监测</h5>
+                            <p class="card-text text-muted">多指标实时采集、异常预警、设备状态管理<br>—— 感知环境动态变化</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 3. 游客智能管理模块 -->
+            <div class="col-md-6 col-lg-4" data-module="游客智能管理">
+                <a href="http://172.20.10.7:3000" class="card-link" target="_self">
+                    <div class="card h-100 p-5 text-center card-hover">
+                        <div class="card-body">
+                            <div class="card-icon">
+                                <<i class="fa fa-users" aria-hidden="true"></i>
+                            </div>
+                            <h5 class="card-title">游客智能管理</h5>
+                            <p class="card-text text-muted">预约核验、轨迹追踪、流量控制与安全预警<br>—— 平衡保护与利用</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 4. 执法监管模块 -->
+            <div class="col-md-6 col-lg-4 offset-lg-2" data-module="执法监管">
+                <a href="http://10.152.230.232:5001" class="card-link" target="_self">
+                    <div class="card h-100 p-5 text-center card-hover">
+                        <div class="card-body">
+                            <div class="card-icon">
+                                <<i class="fa fa-gavel" aria-hidden="true"></i>
+                            </div>
+                            <h5 class="card-title">执法监管</h5>
+                            <p class="card-text text-muted">非法行为识别、执法调度、处置结果归档<br>—— 筑牢生态安全防线</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 5. 科研数据支撑模块 -->
+            <div class="col-md-6 col-lg-4" data-module="科研数据支撑">
+                <a href="http://192.168.69.67:5000" class="card-link" target="_self">
+                    <div class="card h-100 p-5 text-center card-hover">
+                        <div class="card-body">
+                            <div class="card-icon">
+                                <<i class="fa fa-flask" aria-hidden="true"></i>
+                            </div>
+                            <h5 class="card-title">科研数据支撑</h5>
+                            <p class="card-text text-muted">项目管理、数据采集、成果共享与权限控制<br>—— 赋能林草科学研究</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="page-footer text-center">
+        <div class="container">
+            <h6 class="fw-semibold">北京林业大学 信息学院</h6>
+            <div class="footer-divider"></div>
+            <p class="footer-info">计算机科学与技术 / 数据科学与大数据技术等专业 | 2024-2025学年第1学期</p>
+            <p class="footer-info mt-1">数据库系统课程设计 | 指导教师：崔晓晖</p>
+            <p class="mt-3 small opacity-70">© 2025 北京林业大学 智慧林草系统 版权所有</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 1. 检查登录状态：未登录则跳转到登录页
+        const isLogin = localStorage.getItem('isLogin') === 'true';
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+        if (!isLogin || !currentUser.role) {
+            window.location.href = 'login.html';
+        }
+
+        // 2. 显示当前用户信息
+        document.getElementById('userRealName').textContent = `欢迎您，${currentUser.realName}（${getRoleName(currentUser.role)}）`;
+
+        // 3. 定义角色-模块权限映射表（匹配你的权限规则）
+        const roleModulePermissions = {
+            ecological_monitor: ['生物多样性监测'], // 生态监测员
+            data_analyst: ['生物多样性监测', '生态环境监测'], // 数据分析师
+            tourist: ['游客智能管理'], // 游客
+            law_enforcer: ['执法监管'], // 执法人员
+            researcher: ['生物多样性监测', '生态环境监测', '科研数据支撑'], // 科研人员
+            system_admin: ['生物多样性监测', '生态环境监测', '游客智能管理', '执法监管', '科研数据支撑'], // 系统管理员
+            park_manager: ['生物多样性监测', '生态环境监测', '游客智能管理', '执法监管', '科研数据支撑'], // 公园管理人员
+            technician: ['生态环境监测', '执法监管'] // 技术人员
+        };
+
+        // 4. 根据当前角色隐藏无权限的模块
+        const userPermissions = roleModulePermissions[currentUser.role] || [];
+        const allModules = document.querySelectorAll('[data-module]');
+        allModules.forEach(moduleCard => {
+            const moduleName = moduleCard.getAttribute('data-module');
+            if (!userPermissions.includes(moduleName)) {
+                moduleCard.style.display = 'none'; // 无权限则隐藏模块
+            }
+        });
+
+        // 5. 退出登录功能
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('isLogin');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        });
+
+        // 辅助函数：将角色值转换为中文名称
+        function getRoleName(roleValue) {
+            const roleMap = {
+                ecological_monitor: '生态监测员',
+                data_analyst: '数据分析师',
+                tourist: '游客',
+                law_enforcer: '执法人员',
+                researcher: '科研人员',
+                system_admin: '系统管理员',
+                park_manager: '公园管理人员',
+                technician: '技术人员'
+            };
+            return roleMap[roleValue] || '未知角色';
+        }
+    </script>
+</body>
+</html>

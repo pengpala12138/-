@@ -1,0 +1,375 @@
+/* bjfu-theme.css - 北京林业大学主题样式（与index.html配色统一） */
+
+/* ========== 全局变量（同步index.html的北林配色） ========== */
+:root {
+    --bjfu-primary: #0A5E38;        /* 北林深绿 - 主色调（同步index.html的--bfu-green-dark） */
+    --bjfu-secondary: #147D4C;      /* 北林hover绿 - 辅助色（同步index.html的--bfu-green-hover） */
+    --bjfu-light: #E6F4EA;          /* 浅绿背景（同步index.html的--bfu-green-light） */
+    --bjfu-accent: #FFC107;         /* 金色点缀（保留原有） */
+    --bjfu-dark: #0A5E38;           /* 深绿（与主色调一致） */
+    --bjfu-text: #333333;           /* 主要文字色（同步index.html的--bfu-text） */
+    --bjfu-text-light: #666666;     /* 次要文字色 */
+    --bjfu-border: #B3E0C2;         /* 边框色（基于浅绿调整） */
+    --bjfu-shadow: rgba(10, 94, 56, 0.1); /* 阴影（基于主色调） */
+    --bjfu-gradient: linear-gradient(135deg, #0A5E38 0%, #147D4C 100%); /* 渐变（主色到hover色） */
+}
+
+/* ========== 全局样式重置 ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', 'Segoe UI', sans-serif; /* 优先使用index.html的字体 */
+    background-color: #F5F7F6; /* 同步index.html的--bfu-gray */
+    color: var(--bjfu-text);
+    line-height: 1.6;
+}
+
+/* ========== 导航栏样式 ========== */
+.navbar {
+    background: var(--bjfu-gradient) !important;
+    box-shadow: 0 4px 12px var(--bjfu-shadow);
+    padding: 0.8rem 0;
+    border-bottom: 3px solid var(--bjfu-accent);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    background: linear-gradient(to right, #FFFFFF 0%, #FFD700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    padding-left: 45px;
+}
+
+.navbar-brand::before {
+    content: "🌳";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.8rem;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+    padding: 0.5rem 1.2rem;
+    margin: 0 0.2rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.navbar-nav .nav-link:hover {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.navbar-nav .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: white !important;
+}
+
+/* ========== 卡片样式 ========== */
+.card {
+    border: 2px solid transparent; /* 同步index.html的卡片边框 */
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08); /* 同步index.html的卡片阴影 */
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease; /* 扩展过渡效果 */
+    background: white;
+}
+
+.card:hover {
+    transform: translateY(-8px); /* 同步index.html的悬浮效果 */
+    border-color: var(--bjfu-primary); /* 悬浮时显示主色边框 */
+    box-shadow: 0 8px 20px rgba(10, 94, 56, 0.15); /* 同步index.html的悬浮阴影 */
+}
+
+.card-header-park {
+    background: var(--bjfu-gradient) !important;
+    color: white;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-bottom: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header-park::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: skewX(-15deg);
+}
+
+.card-body {
+    padding: 1.5rem;
+    position: relative; /* 用于层级控制 */
+    z-index: 1;
+}
+
+/* ========== 按钮样式 ========== */
+.btn-park {
+    background: var(--bjfu-gradient);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(10, 94, 56, 0.2); /* 基于主色的阴影 */
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-park::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-park:hover {
+    background: linear-gradient(135deg, #147D4C 0%, #0A5E38 100%); /* 反向渐变增强hover效果 */
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(10, 94, 56, 0.3);
+}
+
+.btn-park:hover::before {
+    left: 100%;
+}
+
+.btn-park:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(10, 94, 56, 0.2);
+}
+
+.btn-outline-primary {
+    border-color: var(--bjfu-primary);
+    color: var(--bjfu-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--bjfu-primary);
+    border-color: var(--bjfu-primary);
+}
+
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+/* ========== 表格样式 ========== */
+.table {
+    margin-bottom: 0;
+}
+
+.table-success {
+    background: var(--bjfu-gradient);
+    color: white;
+}
+
+.table-success th {
+    border: none;
+    font-weight: 600;
+    padding: 1rem;
+    background: var(--bjfu-gradient) !important;
+    color: white !important;
+}
+
+.table-hover tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--bjfu-light); /* 使用浅绿背景 */
+    transform: scale(1.002);
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(230, 244, 234, 0.3); /* 基于浅绿的透明色 */
+}
+
+/* ========== 徽章样式 ========== */
+.badge {
+    padding: 0.4em 0.8em;
+    font-weight: 600;
+    border-radius: 20px;
+    font-size: 0.85em;
+}
+
+.badge.bg-primary {
+    background-color: var(--bjfu-primary) !important;
+}
+
+.badge.bg-success {
+    background-color: var(--bjfu-secondary) !important;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+/* ========== 模态框样式 ========== */
+.modal-header.card-header-park {
+    background: var(--bjfu-gradient) !important;
+    color: white;
+    border-radius: 0;
+}
+
+.modal-header .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.modal-content {
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(10, 94, 56, 0.2); /* 基于主色的阴影 */
+}
+
+/* ========== 表单控件样式 ========== */
+.form-control, .form-select {
+    border: 1px solid var(--bjfu-border);
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--bjfu-primary);
+    box-shadow: 0 0 0 0.25rem rgba(10, 94, 56, 0.15); /* 基于主色的焦点效果 */
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--bjfu-dark);
+    margin-bottom: 0.3rem;
+}
+
+.form-label span.text-danger {
+    color: #dc3545;
+}
+
+/* ========== 警告消息样式 ========== */
+.alert {
+    border: none;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.alert-success {
+    background-color: #D4EDDA;
+    color: #155724;
+    border-left: 4px solid var(--bjfu-secondary); /* 使用辅助色 */
+}
+
+.alert-danger {
+    background-color: #F8D7DA;
+    color: #721C24;
+    border-left: 4px solid #dc3545;
+}
+
+.alert-dismissible .btn-close {
+    padding: 1rem;
+}
+
+/* ========== 页面标题样式 ========== */
+h2 {
+    color: var(--bjfu-dark);
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+h2::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: var(--bjfu-gradient);
+    border-radius: 2px;
+}
+
+/* ========== 页脚样式 ========== */
+footer {
+    margin-top: 3rem;
+    padding: 1.5rem 0;
+    background: var(--bjfu-primary); /* 与index.html页脚背景一致 */
+    color: white;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* ========== 响应式设计 ========== */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.2rem;
+        padding-left: 35px;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .btn-park {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ========== 北林特色装饰元素 ========== */
+.bjfu-decoration {
+    position: relative;
+}
+
+.bjfu-decoration::before {
+    content: "🌿";
+    position: absolute;
+    font-size: 1.2rem;
+    opacity: 0.3;
+}
+
+/* 打印样式 */
+@media print {
+    .btn-park, .navbar, .modal, footer {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
